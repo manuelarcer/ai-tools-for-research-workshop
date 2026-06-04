@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Case Study 01 — Using Claude to Build This Workshop</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="topbar">
+      <a href="index.html" class="back">&larr; All case studies</a>
+      <span>Case study 01</span>
+    </header>
+
+    <section class="hero" style="padding-bottom:1.5rem">
+      <p class="kicker reveal">Case study 01 &middot; meta</p>
+      <h1 class="title reveal" style="font-size:clamp(2.4rem,7vw,4.6rem);max-width:20ch">Using Claude to build <em>this workshop</em></h1>
+      <p class="lede reveal">The most honest demo of a research assistant is to show it doing real work &mdash; so the workshop's own preparation is the case study. Below is the actual conversation that planned it: each turn as <b>what I asked &rarr; what the agent did &rarr; the tools it used &rarr; the outcome</b>. Summaries, not raw transcripts.</p>
+    </section>
+
+    <section class="section" style="padding-top:1rem">
+
+      <div class="turn reveal">
+        <span class="tn">1</span>
+        <div>
+          <h3>Start the workshop plan</h3>
+          <div class="qa ask"><span class="label">I asked</span><div class="body">Raul invited me to give a workshop on AI tools for research. Let's build it from the tools I use &mdash; capture the concepts to teach and the tools to showcase.</div></div>
+          <div class="qa"><span class="label">The agent did</span><div class="body">Recognized it as a vault note, ran a dedup check, and filed an <em>idea</em> note with a core insight, the concepts to teach, and a tool list seeded from my real stack &mdash; then committed it to Git.</div></div>
+          <div class="tools"><span class="tool">Skill: intelligent-notes</span><span class="tool">Grep</span><span class="tool">Write</span><span class="tool">git</span></div>
+          <div class="qa" style="margin-top:1rem"><span class="label">Outcome</span><div class="body outcome"><b>ideas/workshop-ai-tools-for-research.md</b> &mdash; the living plan.</div></div>
+        </div>
+      </div>
+
+      <div class="turn reveal">
+        <span class="tn">2</span>
+        <div>
+          <h3>Track it, and remind me</h3>
+          <div class="qa ask"><span class="label">I asked (voice note)</span><div class="body">Add this to my planning repo, aim for July, and nudge me every week or two in the daily briefing.</div></div>
+          <div class="qa"><span class="label">The agent did</span><div class="body">Transcribed the voice note, created a planning project (July deadline), then <em>wrote a new feature into my live morning-briefing script</em> &mdash; a recurring "nudge" field &mdash; and dry-ran it to confirm before relying on it.</div></div>
+          <div class="tools"><span class="tool">Whisper</span><span class="tool">Edit</span><span class="tool">Bash: --dry-run</span><span class="tool">git</span><span class="tool">memory</span></div>
+          <div class="qa" style="margin-top:1rem"><span class="label">Outcome</span><div class="body outcome">A tracked project <b>and</b> a biweekly reminder that auto-stops when I mark it done. <em>The agent extended its own automation on request &mdash; and tested it before shipping.</em></div></div>
+        </div>
+      </div>
+
+      <div class="turn reveal">
+        <span class="tn">3</span>
+        <div>
+          <h3>Make the process the showcase</h3>
+          <div class="qa ask"><span class="label">I asked (voice note)</span><div class="body">Let's record our interactions as an example &mdash; specifically, a case study of how I'm using you to build <em>this</em> workshop.</div></div>
+          <div class="qa"><span class="label">The agent did</span><div class="body">Made it the centerpiece of the plan and started this annotated log &mdash; summarizing, not dumping &mdash; with a note to scrub anything sensitive before showing it publicly.</div></div>
+          <div class="tools"><span class="tool">Whisper</span><span class="tool">Write</span><span class="tool">git</span></div>
+          <div class="qa" style="margin-top:1rem"><span class="label">Outcome</span><div class="body outcome">This case study &mdash; <b>self-referential proof</b> the tools work.</div></div>
+        </div>
+      </div>
+
+      <div class="turn reveal">
+        <span class="tn">4</span>
+        <div>
+          <h3>Choose the delivery format</h3>
+          <div class="qa ask"><span class="label">I asked</span><div class="body">What about an HTML presentation in the browser, with links to the case studies &mdash; use the frontend skill to make it look professional?</div></div>
+          <div class="qa"><span class="label">The agent did</span><div class="body">Found the <em>frontend-design</em> skill, committed to a refined technical-editorial aesthetic, and built this very page &mdash; the hub and this case study &mdash; from the vault notes.</div></div>
+          <div class="tools"><span class="tool">Skill: frontend-design</span><span class="tool">Write (HTML/CSS)</span><span class="tool">git</span></div>
+          <div class="qa" style="margin-top:1rem"><span class="label">Outcome</span><div class="body outcome">The page you're reading. <b>The artifact is the argument.</b></div></div>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="section">
+      <div class="sec-head"><span class="sec-no">&#931;</span><h2 class="sec-title">Tools demonstrated</h2></div>
+      <p class="toolmap">
+        <b>Telegram</b> as the interface &nbsp;&middot;&nbsp; <b>Whisper</b> voice transcription &nbsp;&middot;&nbsp; <b>intelligent-notes</b> (Obsidian + Git) &nbsp;&middot;&nbsp; <b>planning repo</b> + morning-briefing automation &nbsp;&middot;&nbsp; <b>live code editing</b> with dry-run testing &nbsp;&middot;&nbsp; <b>agent memory</b> &nbsp;&middot;&nbsp; <b>frontend-design</b> &nbsp;&middot;&nbsp; multi-repo <b>Git</b>
+      </p>
+    </section>
+
+    <footer class="foot">
+      <p>&larr; <a href="index.html" class="back" style="display:inline">Back to all case studies</a></p>
+      <p>Prototype &middot; v0.1 &middot; content drawn live from the workshop vault note.</p>
+    </footer>
+
+  </div>
+</body>
+</html>
