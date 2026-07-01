@@ -1,0 +1,100 @@
+---
+name: uv-vis-calibration
+description: >
+  Build a Beer-Lambert calibration from a series of UV-Vis spectra, predict the
+  concentration of an unknown sample, and VERIFY the result against a known
+  control before reporting it. Use when a researcher has calibration spectra at
+  known concentrations plus one or more unknowns to quantify.
+---
+
+# UV-Vis Beer-Lambert calibration — workshop scaffold
+
+> **How to use this file.** This is a fill-in-the-blank scaffold, not a finished
+> skill. Work through the milestones **in order** and complete each `TODO`. Do
+> **not** skip ahead to baseline correction (M5). You are *meant* to hit a wall at
+> M4 — that surprise is the whole lesson. Copy this file into your opencode skills
+> directory (see the setup guide), drop the `.template` suffix, and refine the
+> instructions until the agent does each step reliably.
+>
+> **Milestones:** M0 setup · M1 read peaks · M2 calibrate · M3 predict ·
+> M4 benchmark (⚠ expect a shock) · M5 diagnose + correct + self-verify ·
+> M6 hardening (fast track).
+
+## What this skill does
+
+When invoked, help the researcher quantify an unknown from UV-Vis calibration
+data. The peak of interest is near **664 nm**. Data lives in a `data/` folder:
+
+- `calibration_*.csv` — one spectrum per known standard (columns: `wavelength_nm,absorbance`)
+- `calibration_index.csv` — maps each calibration filename to its known concentration (µM)
+- `unknown.csv` — the sample to quantify (no concentration given)
+
+Write and run small Python (numpy / scipy / matplotlib) to do the work. Show the
+researcher your plots and numbers at each step.
+
+---
+
+## Procedure
+
+### M1 — Load spectra and read a peak absorbance  *(build this first)*
+Load every calibration spectrum and its known concentration from the index. For
+each one, read the **peak absorbance**.
+
+- TODO: how will you locate the peak? _(first instinct: the maximum absorbance —
+  write that; you will revisit it)_
+- TODO: produce a table of `concentration_uM → peak_absorbance`.
+- TODO: plot absorbance vs concentration so the researcher can eyeball it.
+
+### M2 — Fit the calibration line
+Fit peak absorbance against known concentration (Beer-Lambert is linear).
+
+- TODO: fit a straight line; report **slope, intercept, and R²**.
+- TODO: state what the slope means physically (hint: ε·l).
+- CHECKPOINT: R² should look excellent. Note it out loud. _(Hold onto that feeling.)_
+
+### M3 — Predict the unknown
+Read the unknown's peak absorbance the **same way** you read the calibration
+peaks, then invert the calibration line to get its concentration.
+
+- TODO: report the predicted concentration with its units.
+
+### M4 — Benchmark against ground truth  *(⚠ STOP here and check)*
+A prediction you cannot check is a guess. The instructor will now reveal the
+unknown's **true** concentration.
+
+- TODO: compute the percent error of your prediction vs the true value.
+- TODO: **react.** Your R² was near 1.0 — so why is the answer off? Write down your
+  hypothesis before continuing. _(A perfect fit is not a correct answer.)_
+
+### M5 — Diagnose, correct, and self-verify  *(only after M4 surprised you)*
+The culprit: the raw maximum includes the **baseline** under the peak, and the
+unknown's baseline differs from the calibration set's.
+
+- TODO: **baseline-correct** each spectrum before reading the peak. _(One good way:
+  fit a line through off-peak "anchor" regions — e.g. below ~520 nm and above
+  ~760 nm, where the dye does not absorb — and subtract it; then read the height
+  at 664 nm.)_
+- TODO: re-run M1–M4 with corrected peaks. The prediction should now land within
+  tolerance of the true value.
+- TODO: **bake the check into the skill.** Add a verification step that runs a
+  known control through the pipeline and **fails loudly** (raises / refuses to
+  report) if the recovered value deviates by more than a set tolerance (e.g. 5%).
+  This is the point of the whole exercise: *a skill you can trust is one that
+  checks itself.*
+
+### M6 — Hardening  *(optional, fast track)*
+- TODO: add a **residual plot** for the calibration fit.
+- TODO: add an **extrapolation guard** — refuse to report if the unknown's
+  absorbance falls outside the calibration range.
+- TODO: propagate uncertainty into a ± on the reported concentration.
+
+---
+
+## Rules this skill must always follow
+- **Never report a concentration without a verification step** that has actually
+  run and passed. If the control check fails, say so and stop — do not report a
+  number.
+- Baseline-correct before reading any peak.
+- Show the researcher the calibration plot, R², and the control-check result — not
+  just the final number.
+- If the unknown is outside the calibrated range, refuse and say why.

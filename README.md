@@ -1,10 +1,17 @@
-# AI Tools for Research — Workshop Presentation
+# AI Tools for Research — Workshop
 
-A browser-based HTML presentation for a workshop on using AI tools (Claude / Claude Code)
-in research. Invited by Raul Ocampo; target delivery July 2026.
+A **hands-on workshop** on using AI tools in research: attendees build a small, reproducible,
+**self-verifying** research skill on their own machine — in [opencode](https://opencode.ai), on a
+free-model path. Not a survey, not a tour of the presenter's stack. Invited by Raul Ocampo; target
+delivery July 2026.
 
-The deck is itself a showcase artifact — built with the `frontend-design` skill in Claude Code,
-from notes kept in the intelligent-notes Obsidian vault.
+**The plan is [docs/workshop-plan.md](docs/workshop-plan.md)** — the authoritative design (3 days ×
+2 hours, remote; self-paced with milestones; verification as the through-line). Read that first.
+
+This repo also holds the **presentation deck** — a browser-based HTML deck used for the Day-1
+concepts and framing. The deck is itself a showcase artifact — built with the `frontend-design`
+skill in Claude Code, from notes kept in the intelligent-notes Obsidian vault. *(The deck's hero
+framing is being reconciled to the plan — see §11 of the plan.)*
 
 ## Run
 

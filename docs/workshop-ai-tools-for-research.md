@@ -16,6 +16,13 @@ summary: "Plan for a research-AI-tools workshop (invited by Raul Ocampo at Juan'
 
 # Workshop — AI Tools for Research (Raul Ocampo invite)
 
+> **⚠️ Superseded as the design.** This is the original **seed** note. The authoritative plan is
+> now [workshop-plan.md](workshop-plan.md), which reflects the decisions from a design grilling
+> (hands-on build workshop on **opencode**, self-paced with milestones, verification as the
+> through-line — not a case-study showcase of the presenter's Claude Code stack). This note is
+> kept for origin and as a source for the concept list and "explore after" material. Where the two
+> disagree, the plan wins; see §12 of the plan for the diff.
+
 ## Core Insight
 
 The strongest version of this workshop isn't a survey of AI tools in the abstract — it's a guided tour of [[Claude Code]] and the agent stack Juan *already runs* for real research work, so attendees see a working system rather than a feature list. It needs two layers: a short conceptual foundation (how LLMs and agents actually work — [[context]], [[skills]], system vs global vs project context, safeguards) so the demos aren't magic, then live examples drawn from Juan's literature, writing, and automation workflows.

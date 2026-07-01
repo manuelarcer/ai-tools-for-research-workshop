@@ -1,0 +1,3 @@
+# Generated at prep/distribution time — regenerable from generate_data.py.
+# Kept out of git so the answer (ground_truth.txt) is never committed.
+data/
