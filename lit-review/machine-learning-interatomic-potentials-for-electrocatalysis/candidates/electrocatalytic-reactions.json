@@ -1,0 +1,108 @@
+{
+  "candidates": [
+    {
+      "doi": "10.26434/chemrxiv-2025-6vcnc",
+      "title": "DPχ: Constant-Potential Machine-Learning Potentials for Large-Scale Electrocatalysis",
+      "authors": ["Junxiang Chen", "Tao Wang"],
+      "year": 2025,
+      "venue": "ChemRxiv",
+      "abstract": "We introduce DPχ, a machine-learning potential that enables electrocatalysis simulations at spatiotemporal scales 10^3-10^4 beyond AIMD while retaining near first-principles accuracy. DPχ adopts a Bader-basin-centroid (BC) representation and explicitly decomposes interfacial charge into a neural-predicted chemical component and a conductor component confined to metal sites. On Pt(111)-H2O, DPχ reproduces DFT-level forces, electrode potential, hydrogen-evolution barriers, and vibrational spectra, opening a route to predictive electrocatalysis under realistic conditions.",
+      "citation_count": 0,
+      "source_api": "crossref",
+      "url": "https://doi.org/10.26434/chemrxiv-2025-6vcnc",
+      "relevance_note": "HER on Pt(111) with constant-potential MLIP using Bader-basin-centroid representation; demonstrates barrier calculations for hydrogen evolution",
+      "abstract_status": "full"
+    },
+    {
+      "doi": "10.1038/s41467-025-58871-7",
+      "title": "Probing nuclear quantum effects in electrocatalysis via a machine-learning enhanced grand canonical constant potential approach",
+      "authors": ["Menglin Sun", "Bin Jin", "Xiaolong Yang", "Shenzhen Xu"],
+      "year": 2025,
+      "venue": "Nature Communications",
+      "abstract": "PCET is the key step for energy conversion in electrocatalysis. Here we develop a unified computational framework to explicitly treat nuclear quantum effects (NQEs) by grand canonical sampling, assisted by a machine learning force field (DP-Ne) adapted for electrochemical conditions. NQEs facilitate proton tunneling through classical barriers in PCET paths for hydrogen evolution reaction at room temperature, leading to remarkable activation energy reduction.",
+      "citation_count": 20,
+      "source_api": "crossref",
+      "url": "https://doi.org/10.1038/s41467-025-58871-7",
+      "relevance_note": "HER studied via grand-canonical constant-potential MLIP (DP-Ne) incorporating nuclear quantum effects; demonstrates PCET mechanism for hydrogen evolution",
+      "abstract_status": "full"
+    },
+    {
+      "doi": "10.1021/acs.jctc.5c01381",
+      "title": "Grand-Canonical Equivariant Neural Potentials for Electrochemical Interfaces",
+      "authors": ["Jia-Lan Chen", "Xin-Rui Qi", "Jinze Zhu", "Jin Li", "Xuechun Jiang", "Wei-Xue Li", "et al."],
+      "year": 2025,
+      "venue": "Journal of Chemical Theory and Computation",
+      "abstract": "We present a constant-potential, E(3)-equivariant message-passing neural network (CPMPNN) that integrates grand-canonical electronic structure principles with a global excess-charge parameter. Benchmarking against grand-canonical DFT confirms that CPMPNN retains first-principles accuracy while achieving three-orders-of-magnitude speedup. Applied to CO dimerization in CO2 reduction and the Volmer step in hydrogen evolution on Cu(100), CPMPNN captures how applied potential modulates thermodynamics and transition-state structures.",
+      "citation_count": 0,
+      "source_api": "websearch",
+      "url": "https://doi.org/10.1021/acs.jctc.5c01381",
+      "relevance_note": "CO2RR (CO dimerization) and HER (Volmer step) on Cu(100) studied with grand-canonical equivariant MLIP; demonstrates potential-dependent kinetics",
+      "abstract_status": "full"
+    },
+    {
+      "doi": "10.1002/smll.202402190",
+      "title": "Experimental and Computational Study Toward Identifying Active Sites of Supported SnOx Nanoparticles for Electrochemical CO2 Reduction Using Machine-Learned Interatomic Potentials",
+      "authors": ["Junjie Shi", "Paulina Pršlja", "Benjin Jin", "Milla Suominen", "Jani Sainio", "Hua Jiang", "Nana Han", "Daria Robertson", "Janez Košir", "Miguel Caro", "Tanja Kallio"],
+      "year": 2024,
+      "venue": "Small",
+      "abstract": "SnOx has received great attention as an electrocatalyst for CO2RR, however, the atomic-level SnOx structure and the nature of the active sites are still ambiguous. This study introduces a machine learning interatomic potential method for atomistic simulation to investigate SnO2 reduction and establish a correlation between SnOx structures and their CO2RR performance. Selectivity is analyzed by comparing *H and *CO2− binding energies correlated with oxygen presence on the nanoparticle surface.",
+      "citation_count": 4,
+      "source_api": "crossref",
+      "url": "https://doi.org/10.1002/smll.202402190",
+      "relevance_note": "CO2RR on SnOx nanoparticles using MLIP to probe surface reconstruction and active sites; combined experimental and computational study",
+      "abstract_status": "full"
+    },
+    {
+      "doi": "10.1002/adfm.202506314",
+      "title": "Bridging Theory and Experiment: Machine Learning Potential-Driven Insights into pH-Dependent CO2 Reduction on Sn-Based Catalysts",
+      "authors": ["Yuhang Wang", "Zelin Wu", "Yingfang Jiang", "Di Zhang", "Qiang Wang", "Congwei Wang", "Huihui Li", "Xue Jia", "Jun Fan", "Hao Li"],
+      "year": 2025,
+      "venue": "Advanced Functional Materials",
+      "abstract": "Sn-based materials are promising for CO2RR to formic acid, but complex surface reconstruction hinders structure-performance understanding. MLP-accelerated MD simulations reveal that SnO2 adopts a nanorod-like morphology and SnS2 forms a rougher surface. pH-dependent CO2RR behavior is established: increasing pH left-shifts the CO2RR volcano and enhances activity. MLP-based approach for studying surface reconstructions at mesoscopic scale.",
+      "citation_count": 13,
+      "source_api": "crossref",
+      "url": "https://doi.org/10.1002/adfm.202506314",
+      "relevance_note": "CO2RR on SnO2 and SnS2 studied with MLP-driven MD for surface reconstruction and pH-dependent microkinetic modeling",
+      "abstract_status": "full"
+    },
+    {
+      "doi": "10.48550/arXiv.2412.15452",
+      "title": "Mechanistic Insights into the Oxygen Evolution Reaction on Nickel-Doped Barium Titanate via Machine Learning-Accelerated Simulations",
+      "authors": ["Kajjana Boonpalit", "Nongnuch Artrith"],
+      "year": 2024,
+      "venue": "arXiv (preprint)",
+      "abstract": "We explore the OER activity of pristine and Ni-doped BaTiO3 at explicit water interfaces using metadynamics simulations. To enable efficient MetaD for OER, we developed a machine learning interatomic potential based on artificial neural networks (ANN), achieving large-scale and long-time simulations with near-DFT accuracy. Ni-doping enhances the catalytic activity of BaTiO3 for OER, consistent with experimental observations.",
+      "citation_count": 0,
+      "source_api": "websearch",
+      "url": "https://arxiv.org/abs/2412.15452",
+      "relevance_note": "OER on Ni-doped BaTiO3 perovskite using ANN-based MLIP for metadynamics simulations at explicit water interfaces",
+      "abstract_status": "full"
+    },
+    {
+      "doi": "10.1021/jacs.4c16638",
+      "title": "Stabilizing Ru in Multicomponent Alloy as Acidic Oxygen Evolution Catalysts with Machine Learning-Enabled Structural Insights and Screening",
+      "authors": ["Arifin Luthfi Maulana", "Shuang Han", "Yu Shan", "Peng-Cheng Chen", "Carlos Lizandara-Pueyo", "Sandip De", "Kerstin Schierle-Arndt", "Peidong Yang"],
+      "year": 2025,
+      "venue": "Journal of the American Chemical Society",
+      "abstract": "We explore stabilizing active Ru sites in Rux(Ir,Fe,Co,Ni)1-x multicomponent alloy for acidic OER. Machine-learned interatomic potential (MLIP) coupled with replica-exchange molecular dynamics describes atomic-scale mixing behavior. MLIP-accelerated high-throughput simulation screens other potential RuIr-containing quinary alloys. Optimized Ru0.20(Ir,Fe,Co,Ni)0.80 exhibits improved OER activity and enhanced stability.",
+      "citation_count": 58,
+      "source_api": "crossref",
+      "url": "https://doi.org/10.1021/jacs.4c16638",
+      "relevance_note": "Acidic OER on Ru multicomponent alloys; MLIP used for structural characterization and high-throughput screening of catalyst candidates",
+      "abstract_status": "full"
+    },
+    {
+      "doi": "10.1039/D2SC06696C",
+      "title": "Neural network potentials for accelerated metadynamics of oxygen reduction kinetics at Au–water interfaces",
+      "authors": ["Xin Yang", "Arghya Bhowmik", "Tejs Vegge", "Heine Anton Hansen"],
+      "year": 2023,
+      "venue": "Chemical Science",
+      "abstract": "The combination of metadynamics and equivariant graph neural network potentials enables the full simulation of oxygen reduction at Au(100)–water interfaces. Active learning based on CUR matrix decomposition samples equilibrium and non-equilibrium structures. An associative ORR mechanism is identified where adsorbed O2 reacts with water to form hydroxyls through an *OOH transition state with a low barrier of 0.3 eV.",
+      "citation_count": 50,
+      "source_api": "crossref",
+      "url": "https://doi.org/10.1039/D2SC06696C",
+      "relevance_note": "ORR on Au(100) studied with equivariant GNN potentials and metadynamics; first demonstration of full reactive simulation of ORR with NNP",
+      "abstract_status": "full"
+    }
+  ]
+}

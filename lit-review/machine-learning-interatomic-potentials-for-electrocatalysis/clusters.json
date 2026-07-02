@@ -1,0 +1,145 @@
+[
+  {
+    "cluster_id": 0,
+    "label": "Machine learning interatomic potential: Bridge the gap between small-scale models and realistic device-scale simulations",
+    "representative_doi": "10.1016/j.isci.2024.109673",
+    "paper_dois": [
+      "10.1038/s41524-023-01124-2",
+      "10.1088/2632-2153/ad5f11",
+      "10.1063/5.0317672",
+      "10.1021/acs.jctc.5c01455",
+      "10.1021/jacsau.5c01112",
+      "10.1021/acscatal.5c08945",
+      "10.1038/s41467-022-29939-5",
+      "10.1016/j.xcrp.2025.102968",
+      "10.48550/arXiv.2511.20487",
+      "10.1021/acs.jcim.5c01262",
+      "10.1063/5.0138597",
+      "10.1038/s41524-023-01123-3",
+      "10.1088/1361-651X/adf56d",
+      "10.1021/acs.chemrev.5c00728",
+      "10.1021/jacsau.6c00100",
+      "10.1038/s41524-024-01333-3",
+      "10.1002/adma.202305758",
+      "10.48550/arXiv.2509.20630",
+      "10.1039/d4sc06529h",
+      "10.1016/j.isci.2024.109673",
+      "10.48550/arXiv.2502.03660",
+      "10.1021/acs.jctc.4c00977"
+    ],
+    "size": 22
+  },
+  {
+    "cluster_id": 1,
+    "label": "Machine Learning Potential for Electrochemical Interfaces with Hybrid Representation of Dielectric Response",
+    "representative_doi": "10.1103/PhysRevLett.135.018003",
+    "paper_dois": [
+      "10.1021/acs.jctc.5c00784",
+      "10.1103/PhysRevLett.135.018003",
+      "10.1038/s41467-025-62824-5",
+      "10.1038/s41467-025-65630-1",
+      "10.1021/acs.jctc.4c01570",
+      "10.1021/acs.jctc.5c01381",
+      "10.1103/48ct-3jxm",
+      "10.1038/s41467-025-58871-7",
+      "10.26434/chemrxiv-2025-6vcnc",
+      "Ion-modulated structure, proton transfer, and capacitance in the Pt(111)/water electric double layer",
+      "Electrochemical Interfaces at Constant Potential: Data-Efficient Transfer Learning for Machine-Learning-Based Molecular Dynamics"
+    ],
+    "size": 11
+  },
+  {
+    "cluster_id": 2,
+    "label": "CHGNet as a pretrained universal neural network potential for charge-informed atomistic modelling",
+    "representative_doi": "10.1038/s42256-023-00716-3",
+    "paper_dois": [
+      "10.1038/s41524-024-01500-6",
+      "10.1038/s42256-023-00716-3",
+      "10.48550/arXiv.2511.11361"
+    ],
+    "size": 3
+  },
+  {
+    "cluster_id": 4,
+    "label": "The Open Catalyst 2022 (OC22) Dataset and Challenges for Oxide Electrocatalysts",
+    "representative_doi": "10.1038/s41597-023-02665-1",
+    "paper_dois": [
+      "10.1038/s41524-023-01121-5",
+      "10.1038/s41597-023-02665-1",
+      "10.1038/s42256-025-01055-1"
+    ],
+    "size": 3
+  },
+  {
+    "cluster_id": 3,
+    "label": "Development and validation of a general-purpose ReaxFF reactive force field for earth material modeling",
+    "representative_doi": "10.1063/5.0194486",
+    "paper_dois": [
+      "10.1063/5.0194486"
+    ],
+    "size": 1
+  },
+  {
+    "cluster_id": 5,
+    "label": "Dataset Merging Strategy for Efficient Construction of a Machine-Learning Force Field: A case of CeO2 Surfaces with an Oxygen Vacancy",
+    "representative_doi": "10.26434/chemrxiv.15003015/v1",
+    "paper_dois": [
+      "10.26434/chemrxiv.15003015/v1"
+    ],
+    "size": 1
+  },
+  {
+    "cluster_id": 6,
+    "label": "Managing Expectations and Imbalanced Training Data in Reactive Force Field Development: An Application to Water Adsorption on Alumina",
+    "representative_doi": "10.1021/acs.jctc.3c01009",
+    "paper_dois": [
+      "10.1021/acs.jctc.3c01009"
+    ],
+    "size": 1
+  },
+  {
+    "cluster_id": 7,
+    "label": "Potential and electric double-layer effect in electrocatalytic urea synthesis",
+    "representative_doi": "10.1038/s41467-024-45522-6",
+    "paper_dois": [
+      "10.1038/s41467-024-45522-6"
+    ],
+    "size": 1
+  },
+  {
+    "cluster_id": 8,
+    "label": "Reactive Force Field Development for Propane Dehydrogenation on Platinum Surfaces",
+    "representative_doi": "10.1021/acs.jpcc.3c07126",
+    "paper_dois": [
+      "10.1021/acs.jpcc.3c07126"
+    ],
+    "size": 1
+  },
+  {
+    "cluster_id": 9,
+    "label": "Machine learning interatomic potential can infer electrical response",
+    "representative_doi": "10.1038/s41524-025-01911-z",
+    "paper_dois": [
+      "10.1038/s41524-025-01911-z"
+    ],
+    "size": 1
+  },
+  {
+    "cluster_id": 10,
+    "label": "Multi-scale study of cobalt adsorption on TiO2 anatase (101): From DFT to force-field parameterization",
+    "representative_doi": "10.1063/5.0282874",
+    "paper_dois": [
+      "10.1063/5.0282874"
+    ],
+    "size": 1
+  },
+  {
+    "cluster_id": 11,
+    "label": "MLIPX: machine-learned interatomic potential eXploration",
+    "representative_doi": "10.1088/1361-648X/ae0111",
+    "paper_dois": [
+      "10.1088/1361-648X/ae0111"
+    ],
+    "size": 1
+  }
+]

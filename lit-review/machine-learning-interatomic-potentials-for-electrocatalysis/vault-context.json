@@ -1,0 +1,146 @@
+[
+  {
+    "title": "UMA — Universal Model for Atoms Family",
+    "path": "literature/uma-universal-model-for-atoms.md",
+    "excerpt": "Meta FAIR's family of universal MLIPs trained on 500M structures using Mixture of Linear Experts (MoLE). UMA-S/UMA-M/UMA-L models spanning catalysis (OC20 benchmark: 294 meV adsorption energy MAE), materials (Matbench Discovery SOTA), and molecules. Based on eSEN equivariant GNN with SO(2) convolutions. Five DFT task heads (omat, oc20, omol, odac, omc).",
+    "origin": "skill-generated"
+  },
+  {
+    "title": "MLaMD — Explicit Solvent on Heterogeneous Catalysts via On-the-Fly MLIPs (Chen, Zhang & Zhang, 2023)",
+    "path": "literature/mlamd-explicit-solvent-mlips-chen-2023.md",
+    "excerpt": "On-the-fly MLIP (Moment Tensor Potential + MaxVol active learning) accelerates explicit-solvent MD on metal-water interfaces by ~4 orders of magnitude. Reproduces AIMD adsorption energies on Cu (CO*, OH*, COH*, HCO*, OCCHO* — CO₂RR intermediates) and free-energy barriers for C-H scission of ethylene glycol on Cu(111)/Pd(111) via metadynamics. Shows implicit solvation discrepancies are species-dependent.",
+    "origin": "user"
+  },
+  {
+    "title": "CARE — An End-to-End Framework for Reactivity in Heterogeneous Catalysis",
+    "path": "literature/care-end-to-end-framework-reactivity-heterogeneous-catalysis.md",
+    "excerpt": "López group framework: rule-based CRN generator + GAME-Net-UQ (GNN, 558k params, predicts adsorption+TS energies from molecular graphs) + microkinetic solver. Benchmarks 91 MLIPs (FAIRChem/UMA, MACE, SevenNet, Orb, PET-MAD) for NEB-based TS search. Key finding: general-purpose MLIPs give MAE > 2 eV for TS barriers (EquiformerV2, MACE-MP-0) because training data are predominantly near-equilibrium structures. GAME-Net-UQ achieves 0.33 eV MAE for E_act using TS-specific training data.",
+    "origin": "skill-generated"
+  },
+  {
+    "title": "Fine-tuning Universal Machine Learning Potentials for Transition State Search in Surface Catalysis",
+    "path": "literature/fine-tuning-universal-mlps-transition-state-catalysis.md",
+    "excerpt": "Cheula et al. active-learning workflow to fine-tune universal MLPs for DFT-quality TS search. Bond-Aware Sella algorithm. ~8 DFT single-point calculations per TS. Validated on 250 TSs from CO₂ hydrogenation reaction network on metal and single-atom alloy surfaces. Directly addresses the >2 eV MAE problem identified by CARE.",
+    "origin": "skill-generated"
+  },
+  {
+    "title": "Bias in Universal Machine-Learned Interatomic Potentials and its Effects on Fine-Tuning",
+    "path": "literature/bias-universal-mlips-fine-tuning.md",
+    "excerpt": "Wong et al. investigate how model biases in universal MLIPs propagate through fine-tuning. Key findings: universal MLIPs achieve ~0.6 kcal/mol error on Matbench Discovery, but out-of-domain tasks require fine-tuning. Naive fine-tuning (parallel MD trajectories) fails at extrapolation. Periodic fine-tuning (single trajectory, interval retraining) yields more generalizable dynamics. Critical for practitioners adapting universal MLIPs to specific catalytic systems.",
+    "origin": "skill-generated"
+  },
+  {
+    "title": "Scaling Machine Learning Interatomic Potentials with Mixtures of Experts",
+    "path": "literature/moe-mlips-element-wise-routing.md",
+    "excerpt": "Liu et al. systematic development of MoE/MoLE architectures for MLIPs. Element-wise routing outperforms configuration-level routing — experts assigned per element, not per configuration. SOTA on OMol25, OMat24, OC20M. Expert specialization aligns with periodic table groups. Potential enabler for universal MLIPs handling full compositional space of catalysis (HEAs, complex oxides).",
+    "origin": "skill-generated"
+  },
+  {
+    "title": "Proof-Carrying Materials: Falsifiable Safety Certificates for Machine-Learned Interatomic Potentials",
+    "path": "literature/proof-carrying-materials-falsifiable-safety-mlips.md",
+    "excerpt": "Basu et al. reliability framework: single MLIP as stability filter misses 93% of DFT-stable materials (recall 0.07). PCM: adversarial falsification + bootstrap envelopes + Lean 4 formal certification. Auditing CHGNet, TensorNet, MACE reveals architecture-specific blind spots with near-zero pairwise error correlations (r ≤ 0.13). Multi-MLIP consensus recovers 25% more discoveries. Directly relevant to MLIP workflows for catalyst screening.",
+    "origin": "skill-generated"
+  },
+  {
+    "title": "Accelerating Catalyst Materials Discovery With Large AI Models",
+    "path": "literature/accelerating-catalyst-discovery-with-large-ai-models.md",
+    "excerpt": "Zhang et al. review on how universal MLIPs and LLMs are reshaping catalyst discovery — from database curation to closed-loop autonomous experimentation. Universal MLIPs: orders of magnitude faster than DFT while retaining useful accuracy for catalyst screening. Combined with LLMs, they form the computational backbone of accelerated discovery workflows.",
+    "origin": "skill-generated"
+  },
+  {
+    "title": "Prospects for Using Artificial Intelligence to Understand Intrinsic Kinetics of Heterogeneous Catalytic Reactions",
+    "path": "literature/ai-intrinsic-kinetics-heterogeneous-catalysis-medford.md",
+    "excerpt": "Medford et al. perspective. Central challenge: many-to-one problem (many parameter sets yield identical observables — mechanism inversion is ill-posed). Three AI directions: (1) ML-potential-accelerated kMC and MKM, (2) LLM in-context learning for Bayesian optimization (BO-ICL), (3) agentic DFT workflows (DREAMS). kMC models 'coupled directly to ML force fields.'",
+    "origin": "skill-generated"
+  },
+  {
+    "title": "First-Principles-Based Multiscale Modelling of Heterogeneous Catalysis",
+    "path": "literature/first-principles-multiscale-modelling-heterogeneous-catalysis.md",
+    "excerpt": "Bruix et al. (2019) review of multiscale frameworks. Four levels: DFT → 1pMK → microstructure → transport. Solid-liquid electrocatalysis adds solvation effects, electric double layer dynamics, and phase-space averaging — 'expensive and poorly captured by continuum solvation models.' Machine-learned interatomic potentials expected to be a game changer for accelerating reaction network exploration and rate constant computation.",
+    "origin": "skill-generated"
+  },
+  {
+    "title": "Electrocatalytic Oxidation of Ammonia to Nitrate on NiOOH with OH/O Vacancies",
+    "path": "literature/nioooh-oh-o-vacancies-nh3-to-nitrate-phan-2025.md",
+    "excerpt": "Combined experimental/DFT study of ammonia electro-oxidation on NiOOH. OH vacancies more stable than O vacancies; OH-OH vacancy pair most stable at oxidation potentials. Potential-dependent formation energies confirm vacancies persist under operating conditions. Electrocatalysis DFT study — not itself an MLIP paper, but relevant as an example of the electrochemical systems MLIPs need to model.",
+    "origin": "user"
+  },
+  {
+    "title": "Universal Electronic Manifolds for Extrapolative Alloy Discovery",
+    "path": "literature/universal-electronic-manifolds-hea-discovery.md",
+    "excerpt": "Ray et al.: non-interacting electron density as descriptor for refractory HEAs. Bayesian active learning with 10 training samples achieves <2% error. Zero-shot extrapolation to 7-component system. Could complement MLIPs by providing physics-based descriptors rather than relying solely on learned representations.",
+    "origin": "skill-generated"
+  },
+  {
+    "title": "Agentic MLIP Workflows for Computational Catalysis",
+    "path": "ideas/agentic-mlip-catalysis-workflows.md",
+    "excerpt": "End-to-end agent-driven heterogeneous catalysis using MLIP potentials (UMA) orchestrated through modular skills. Pipeline: fetch bulk → MLIP relax → generate surface → place adsorbates → compute adsorption energies → (v2) NEB for TS barriers. Model selection: UMA-S-1.2 for screening (6M active params, 24 steps/s), UMA-M for validation (50M active params, 3 steps/s). Accuracy gap on OC20 OOD-Both: ~5 meV adsorption energy.",
+    "origin": "skill-generated"
+  },
+  {
+    "title": "Autocatalysis — Autonomous Agent-Driven Catalyst Screening Architecture",
+    "path": "projects/autocatalysis/architecture.md",
+    "excerpt": "Full architecture for autonomous catalyst screening using LLM agents + MLIP. Confirms MLIP-NEB accuracy wall: EquiformerV2 and MACE-MP-0 give MAE >2 eV for activation energies. Multi-fidelity strategy: (LOW) graph NN screen, (MEDIUM) MLIP-NEB, (HIGH) DFT single-point. Notes that transition states (saddle points) are underrepresented in MLIP training data. Reactions like C-C coupling and PCET may be beyond current MLIP capabilities.",
+    "origin": "user"
+  },
+  {
+    "title": "Post Log — The Trust Gap in Universal MLIPs (April 3, 2026)",
+    "path": "projects/linkedin-ai-catalysis/post-logs/2026-04-03-trust-gap.md",
+    "excerpt": "Third LinkedIn post on MLIP trust: CARE (universal MLIPs give >2 eV MAE on TS barriers) × Matlantis PFP v8 (SaaS universal MLIP, 96 elements, no fine-tuning) × Proof-Carrying Materials (single-MLIP stability screening misses 93% of DFT-stable materials).",
+    "origin": "user"
+  },
+  {
+    "title": "Post Log — The Phase Gap (May 1, 2026)",
+    "path": "projects/linkedin-ai-catalysis/post-logs/2026-05-01-the-phase-gap.md",
+    "excerpt": "Fifth LinkedIn post. Triangle on ARPA-E CATALCHEM-E × 4H-phase HEA for electrocatalysis (Li et al. Nature Materials — structurally novel host outside MLIP training distribution) × Loveday/Kaźmierczak/López universal-MLIP transferability gap (ACS Catalysis — no standardized benchmarking protocols for diverse surfaces). Water electrolysis as test reaction.",
+    "origin": "user"
+  },
+  {
+    "title": "Post Log — Screening Then Specialists (May 4, 2026)",
+    "path": "projects/linkedin-ai-catalysis/post-logs/2026-05-04-screening-then-specialists.md",
+    "excerpt": "Sixth LinkedIn post. Xin et al. Nature Catalysis 22-author roadmap × Kempen et al. first 80-MLIP zero-shot benchmark on heterogeneous catalysis × Mathanker et al. ACS Electrochemistry MACE active-learning committee potentials achieving DFT-level accuracy on 21 metal-electrolyte systems (Au, Cu, Rh in aqueous NaCl). No single MLIP universally best; magnetic-material catastrophic failures; relaxation degradation.",
+    "origin": "user"
+  },
+  {
+    "title": "Post Log — CO2 Routes Reliability Gap (June 2, 2026)",
+    "path": "projects/linkedin-ai-catalysis/post-logs/2026-06-02-co2-routes-reliability-gap.md",
+    "excerpt": "Bharadwaj et al. fine-tuned MACE screens HE-MBene CO₂-to-CO electroreduction candidates (56 → 55 mechanically stable → 45 thermodynamically stable; energy RMSE 3.49 meV/atom adsorbed) × Pisal EquiformerV2-on-OC20 (1.4M sites, 2,626 surfaces, EMAE 0.11 eV) × PROBE (post-hoc reliability from backbone embeddings). No per-prediction UQ on either screening pipeline.",
+    "origin": "user"
+  },
+  {
+    "title": "Scan — Week 18 (May 3, 2026)",
+    "path": "projects/linkedin-ai-catalysis/scans/2026-05-03-scan.md",
+    "excerpt": "Electrochemical interface gap triangle: Nature Catalysis 22-author roadmap names solid-liquid interface as open challenge × 80-MLIP benchmark (arXiv:2512.16702 — tests MACE, GRACE, SevenNet, MatterSim, ORB) × ACS Electrochemistry MACE committee potentials for 21 metal-electrolyte systems. Universal MLIPs zero-shot can't do surface chemistry pipelines need; domain-specific active-learning potentials close gap one domain at a time.",
+    "origin": "user"
+  },
+  {
+    "title": "Scan — Week 20 (May 17, 2026)",
+    "path": "projects/linkedin-ai-catalysis/scans/2026-05-17-scan.md",
+    "excerpt": "MACE fine-tuning triangle: Karimitari et al. systematic fine-tuning of 9 MACE variants across 141 reactions (0.15 eV MAE reaction energies; 0.19 eV barrier MAE for OOD CO₂RR on Cu fine-tuned on O/OH adsorption data) × MLaMD explicit-solvent active learning × Medford many-to-one kinetics challenge. From-scratch MACE with 5-10% perturbed high-energy configs doubles accuracy vs. equilibrium-only training.",
+    "origin": "user"
+  },
+  {
+    "title": "Research Briefing — 2026-W11",
+    "path": "research-briefings/2026-W11.md",
+    "excerpt": "MLIP papers flagged: 'Projected Hessian Learning for MLIPs' (arXiv:2603.04523), 'Scalable attention-based MLIPs' (arXiv:2603.06567), 'Scaling MLIPs with Mixtures of Experts' (arXiv:2603.07977).",
+    "origin": "user"
+  },
+  {
+    "title": "Research Briefing — 2026-W12",
+    "path": "research-briefings/2026-W12.md",
+    "excerpt": "Matlantis-PFP v8 universal MLIP with r2SCAN functional (arXiv:2603.11063). MLIPs constructed with minimum ab initio data (npj Comput. Mater. 2026). Baldwin et al. 'Design Space of Self-Consistent Electrostatic Machine Learning Interatomic Potentials' (MACE group, arXiv:2603.14700).",
+    "origin": "user"
+  },
+  {
+    "title": "Research Briefing — 2026-W13",
+    "path": "research-briefings/2026-W13.md",
+    "excerpt": "France-Lanord et al. 'Overcoming sampling limitations using machine-learned interatomic potentials: water-in-salt electrolytes' (arXiv:2603.22099). 'Fine-tuning of universal MLIPs for 2D high-entropy alloys' (arXiv:2603.23029). Del Fré et al. 'Data-driven MLIP for gas-surface scattering dynamics: NO on graphite' (arXiv:2603.18864).",
+    "origin": "user"
+  },
+  {
+    "title": "Research Briefing — 2026-W14",
+    "path": "research-briefings/2026-W14.md",
+    "excerpt": "Li et al. 'Synthesis of 4H-phase high-entropy alloys for electrocatalysis' — Nature Materials (2026). 4H-phase HEA as structurally novel host outside MLIP training distribution, used as vertex in Phase Gap LinkedIn post.",
+    "origin": "user"
+  }
+]

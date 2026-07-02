@@ -1,0 +1,17 @@
+topic: "Machine learning interatomic potentials (MLIP) for electrocatalytic applications"
+slug: "machine-learning-interatomic-potentials-for-electrocatalysis"
+created: "2026-07-02T12:00:00Z"
+depth: targeted
+target_papers: 50
+from_year: 2021
+to_year: 2026
+source_bias: academic+industry
+sub_questions:
+  - "What ML architectures (GNNs, equivariant networks, etc.) dominate MLIP development for electrocatalysis?"
+  - "What training data, reference calculations, and datasets underpin MLIPs for electrocatalytic systems?"
+  - "How do current MLIPs handle electrochemical complexities — solvent, electric double-layer, applied potential, pH?"
+  - "How accurately do MLIPs reproduce DFT energies, forces, and reaction barriers for electrocatalytic reactions?"
+  - "What specific electrocatalytic reactions (HER, OER, CO2RR, etc.) have been studied with MLIPs?"
+  - "What benchmarks or validation protocols exist for evaluating MLIPs in electrocatalysis?"
+  - "What are the main limitations and open challenges in applying MLIPs to electrochemical systems?"
+review_filename: mlip-electrocatalysis.md

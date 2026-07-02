@@ -1,0 +1,175 @@
+[
+  {
+    "doi": "10.1021/acscatal.5c08945",
+    "title": "Challenges and Opportunities of Pretrained Machine Learning Interatomic Potentials in Heterogeneous Catalysis",
+    "authors": [
+      "Oliver Loveday",
+      "Kamila Kaźmierczak",
+      "N. López"
+    ],
+    "year": 2026,
+    "venue": "ACS Catalysis",
+    "abstract": "The design of catalysts gets its fundamental rationale from accurate and efficient modeling of reactivity on surfaces and materials. To reach this detailed atomistic understanding, density functional theory (DFT) has been the key computational technique. However, the emergence of machine learning interatomic potentials (MLIPs) marks a significant paradigm shift, offering the potential to match DFT accuracy at a drastically reduced computational cost. This perspective provides an overview of state-of-the-art MLIPs for heterogeneous catalysis as \"out-of-the-box\" tools. We summarize the different families of MLIPs and their training processes and then apply these pretrained models to heterogeneous catalysis problems. Furthermore, we critically address the challenges of model transferability and integration in unified frameworks, underscoring the necessity for standardized protocols to benchmark performance across different architectures. Finally, we assess the capacity of pretrained models to democratize computational catalysis, highlighting the specific hurdles that remain in achieving reliable, predictive power for widespread use.",
+    "citation_count": 3,
+    "source_api": "semanticscholar",
+    "url": "https://doi.org/10.1021/acscatal.5c08945",
+    "relevance_note": "Directly addresses challenges and opportunities of pretrained MLIPs in heterogeneous catalysis, including transferability limitations and benchmarking needs central to the sub-question.",
+    "abstract_status": "full"
+  },
+  {
+    "doi": "10.1063/5.0317672",
+    "title": "How accurate are foundational machine learning interatomic potentials for heterogeneous catalysis?",
+    "authors": [
+      "Luuk H. E. Kempen",
+      "Raffaele Cheula",
+      "Mie Andersen"
+    ],
+    "year": 2025,
+    "venue": "Journal of Chemical Physics",
+    "abstract": "Foundational machine-learning interatomic potentials (MLIPs) are being developed at a rapid pace, promising closer and closer approximation to ab initio accuracy. This unlocks the possibility to simulate much larger length and time scales. However, benchmarks for these MLIPs are usually limited to ordered, crystalline, and bulk materials. Hence, reported performance does not necessarily reflect MLIP performance accurately in real applications such as heterogeneous catalysis. Here, we systematically analyze zero-shot performance of 80 different MLIPs, evaluating tasks typical for heterogeneous catalysis across a range of different datasets, including adsorption and reaction on surfaces of alloyed metals, oxides, and metal-oxide interfacial systems. We demonstrate that current-generation foundational MLIPs can already perform with high accuracy for applications such as predicting vacancy formation energies of perovskite oxides or zero-point energies of supported nanoclusters. However, limitations also exist. We find that many MLIPs catastrophically fail when applied to magnetic materials, and structure relaxation in the MLIP generally increases the energy prediction error compared to single-point evaluation of a previously optimized structure.",
+    "citation_count": 5,
+    "source_api": "semanticscholar-citations",
+    "url": "https://doi.org/10.1063/5.0317672",
+    "relevance_note": "Rigorous zero-shot benchmark of 80 MLIPs for catalytic tasks, revealing catastrophic failures on magnetic systems and increased error during relaxation—key limitations for electrocatalysis.",
+    "abstract_status": "full"
+  },
+  {
+    "doi": "10.1021/jacsau.6c00100",
+    "title": "Smarter Data: Rethinking Data Generation for Machine Learning Potentials in Heterogeneous Catalysis",
+    "authors": [
+      "Wenbo Xie",
+      "Yixia Han",
+      "Chenyu Wu",
+      "P. Hu"
+    ],
+    "year": 2026,
+    "venue": "JACS Au",
+    "abstract": "Machine-learning potentials (MLPs) promise near-first-principles fidelity at scales relevant to heterogeneous catalysis, yet the key determinant of their reliability remains the quality of the training data. A paramount challenge lies in constructing training sets that capture both the system-specific structural domains and the broader chemical variability arising from the complex, dynamic nature of heterogeneous catalytic systems. In this perspective, we argue that the key question is no longer simply how to generate more data, but how to generate the right data. We reinterpret the main strategies used to construct MLP training sets for heterogeneous catalysis through the lens of scope, relevance, and coverage.",
+    "citation_count": 0,
+    "source_api": "semanticscholar-citations",
+    "url": "https://doi.org/10.1021/jacsau.6c00100",
+    "relevance_note": "Directly focuses on the critical challenge of training data quality/representativeness for MLIPs in heterogeneous catalysis—a primary limitation for electrochemical applications.",
+    "abstract_status": "truncated"
+  },
+  {
+    "doi": "10.1038/s41524-024-01333-3",
+    "title": "Learning from models: high-dimensional analyses on the performance of machine learning interatomic potentials",
+    "authors": [
+      "Yunsheng Liu",
+      "Yifei Mo"
+    ],
+    "year": 2024,
+    "venue": "npj Computational Materials",
+    "abstract": "Machine learning interatomic potential (MLIP) has been widely adopted for atomistic simulations. While errors and discrepancies for MLIPs have been reported, a comprehensive examination of the MLIPs' performance over a broad spectrum of material properties has been lacking. This study introduces an analysis process comprising model sampling, benchmarking, error evaluations, and multi-dimensional statistical analyses on an ensemble of MLIPs for prediction errors over a diverse range of properties. By carrying out this analysis on 2300 MLIP models based on six different MLIP types, several properties that pose challenges for the MLIPs to achieve small errors are identified. The Pareto front analyses on two or more properties reveal the trade-offs in different properties of MLIPs, underscoring the difficulties of achieving low errors for a large number of properties simultaneously.",
+    "citation_count": 14,
+    "source_api": "semanticscholar",
+    "url": "https://doi.org/10.1038/s41524-024-01333-3",
+    "relevance_note": "Comprehensive analysis of 2300 MLIP models revealing trade-offs and properties that are inherently challenging—directly relevant to understanding limitations for electrochemical systems.",
+    "abstract_status": "full"
+  },
+  {
+    "doi": "10.1002/adma.202305758",
+    "title": "Construction of High Accuracy Machine Learning Interatomic Potential for Surface/Interface of Nanomaterials—A Review",
+    "authors": [
+      "Kaiwei Wan",
+      "Jianxin He",
+      "Xinghua Shi"
+    ],
+    "year": 2023,
+    "venue": "Advanced Materials",
+    "abstract": "The inherent discontinuity and unique dimensional attributes of nanomaterial surfaces and interfaces bestow them with various exceptional properties. These properties, however, also introduce difficulties for both experimental and computational studies. The advent of machine learning interatomic potential (MLIP) addresses some of the limitations associated with empirical force fields, presenting a valuable avenue for accurate simulations of these surfaces/interfaces of nanomaterials. Central to this approach is the idea of capturing the relationship between system configuration and potential energy, leveraging the proficiency of machine learning (ML) to precisely approximate high-dimensional functions. This review offers an in-depth examination of MLIP principles and their execution and elaborates on their applications in the realm of nanomaterial surface and interface systems. The prevailing challenges faced by this potent methodology are also discussed.",
+    "citation_count": 63,
+    "source_api": "semanticscholar",
+    "url": "https://doi.org/10.1002/adma.202305758",
+    "relevance_note": "Review focused on MLIP challenges for surfaces/interfaces—directly applicable to electrocatalytic electrode-electrolyte interfaces and nanomaterial surface challenges.",
+    "abstract_status": "full"
+  },
+  {
+    "doi": "10.48550/arXiv.2509.20630",
+    "title": "MLIP Arena: Advancing Fairness and Transparency in Machine Learning Interatomic Potentials via an Open, Accessible Benchmark Platform",
+    "authors": [
+      "Chiang Yuan",
+      "T. Kreiman",
+      "Christine Zhang",
+      "Matthew C Kuner",
+      "Elizabeth Weaver",
+      "Ishan Amin",
+      "Hyunsoo Park",
+      "Y. Lim",
+      "Jihan Kim",
+      "Daryl C. Chrzan",
+      "Aron Walsh",
+      "Samuel M. Blau",
+      "M. Asta",
+      "A. Krishnapriyan"
+    ],
+    "year": 2025,
+    "venue": "arXiv.org",
+    "abstract": "Machine learning interatomic potentials (MLIPs) have revolutionized molecular and materials modeling, but existing benchmarks suffer from data leakage, limited transferability, and an over-reliance on error-based metrics tied to specific density functional theory (DFT) references. We introduce MLIP Arena, a benchmark platform that evaluates force field performance based on physics awareness, chemical reactivity, stability under extreme conditions, and predictive capabilities for thermodynamic properties and physical phenomena. By moving beyond static DFT references and revealing the important failure modes of current foundation MLIPs in real-world settings, MLIP Arena provides a reproducible framework to guide the next-generation MLIP development toward improved predictive accuracy and runtime efficiency while maintaining physical consistency.",
+    "citation_count": 23,
+    "source_api": "semanticscholar",
+    "url": "https://arxiv.org/abs/2509.20630",
+    "relevance_note": "Benchmark revealing failure modes of foundation MLIPs including limited transferability and data leakage issues—critical open challenges for electrochemical applications.",
+    "abstract_status": "full"
+  },
+  {
+    "doi": "10.1039/d4sc06529h",
+    "title": "Crash testing machine learning force fields for molecules, materials, and interfaces: model analysis in the TEA Challenge 2023",
+    "authors": [
+      "I. Poltavsky",
+      "Anton Charkin-Gorbulin",
+      "Mirela Puleva",
+      "Gregory Fonseca",
+      "Ilyes Batatia",
+      "N. Browning",
+      "Stefan Chmiela",
+      "Mengnan Cui",
+      "J. Frank",
+      "Stefan N. Heinen",
+      "Bing Huang",
+      "Silvan Käser",
+      "A. Kabylda",
+      "Danish Khan",
+      "Carolin Müller",
+      "Alastair J. A. Price",
+      "K. Riedmiller",
+      "K. Töpfer",
+      "Tsz Wai Ko",
+      "Markus Meuwly",
+      "Matthias Rupp",
+      "Gábor Csányi",
+      "O. A. von Lilienfeld",
+      "J. Margraf",
+      "Klaus-Robert Müller",
+      "Alexandre Tkatchenko"
+    ],
+    "year": 2025,
+    "venue": "Chemical Science",
+    "abstract": "Atomistic simulations are routinely employed in academia and industry to study the behavior of molecules, materials, and their interfaces. Central to these simulations are force fields (FFs), whose development is challenged by intricate interatomic interactions at different spatio-temporal scales and the vast expanse of chemical space. Machine learning (ML) FFs, trained on quantum-mechanical energies and forces, have shown the capacity to achieve sub-kcal (mol−1 Å−1) accuracy while maintaining computational efficiency. The TEA Challenge 2023 rigorously evaluated commonly used MLFFs across diverse applications, highlighting their strengths and weaknesses. Participants trained their models using provided datasets, and the results were systematically analyzed to assess the ability of MLFFs to reproduce potential energy surfaces, handle incomplete reference data, manage multi-component systems, and model complex periodic structures.",
+    "citation_count": 15,
+    "source_api": "semanticscholar",
+    "url": "https://doi.org/10.1039/d4sc06529h",
+    "relevance_note": "Multi-model blind challenge revealing MLFF strengths/weaknesses for interfaces and multi-component systems—directly relevant to electrochemical interface modeling challenges.",
+    "abstract_status": "full"
+  },
+  {
+    "doi": "10.1016/j.isci.2024.109673",
+    "title": "Machine learning interatomic potential: Bridge the gap between small-scale models and realistic device-scale simulations",
+    "authors": [
+      "Guanjie Wang",
+      "Changrui Wang",
+      "Xuanguang Zhang",
+      "Zefeng Li",
+      "Jian Zhou",
+      "Zhimei Sun"
+    ],
+    "year": 2024,
+    "venue": "iScience",
+    "abstract": "Summary Machine learning interatomic potential (MLIP) overcomes the challenges of high computational costs in density-functional theory and the relatively low accuracy in classical large-scale molecular dynamics, facilitating more efficient and precise simulations in materials research and design. In this review, the current state of the four essential stages of MLIP is discussed, including data generation methods, material structure descriptors, six unique machine learning algorithms, and available software. Furthermore, the applications of MLIP in various fields are investigated, notably in phase-change memory materials, structure searching, material properties predicting, and the pre-trained universal models. Eventually, the future perspectives, consisting of standard datasets, transferability, generalization, and trade-off between accuracy and complexity in MLIPs, are reported.",
+    "citation_count": 131,
+    "source_api": "semanticscholar",
+    "url": "https://doi.org/10.1016/j.isci.2024.109673",
+    "relevance_note": "Highly-cited comprehensive review covering MLIP challenges including transferability, generalization, and accuracy-complexity trade-offs—foundational context for electrochemical applications.",
+    "abstract_status": "full"
+  }
+]
