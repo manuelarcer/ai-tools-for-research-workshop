@@ -56,8 +56,12 @@ Evaluated per incoming group message:
 ## 5. The Claude call
 
 - **Default model:** Claude Sonnet 5 (`claude-sonnet-5`) — fast, cheap, strong vision, right for live Q&A.
-- **Escalation:** the request asks Claude to return a structured result: `{ answer, escalate }`. If `escalate` is true (question beyond confident scope), the bot silently re-asks **Opus 4.8** (`claude-opus-4-8`) and sends the Opus answer instead. No separate triage call — the escalation judgment rides along with the first answer, so Opus only fires on genuinely hard questions.
-  - Manual override: a message containing `/dificil` forces Opus directly.
+- **Escalation (asynchronous):** the request asks Claude to return a structured result: `{ answer, escalate }`. If `escalate` is true (question beyond confident scope), the bot does **not** block:
+  1. It posts a short interim reply to the asker — e.g., *"María: buena pregunta, la escalo a un modelo más potente (Opus) y te respondo en un momento."*
+  2. It fires the **Opus 4.8** (`claude-opus-4-8`) call as a background task (`asyncio.create_task`).
+  3. The main loop **keeps answering other attendees' questions** while Opus works.
+  4. When Opus returns, the bot posts the full answer as a Telegram **reply to the original question** (so it threads correctly even if the chat has moved on).
+  - No separate triage call — the escalation judgment rides along with the first Sonnet answer, so Opus only fires on genuinely hard questions. No manual override command.
 - **Grounding (system prompt):** at startup, load and concatenate into the system prompt:
   - `README.md`
   - `exercise/` contents (the opencode build + Beer-Lambert exercise)
@@ -104,6 +108,7 @@ Evaluated per incoming group message:
 ## 9. Error handling & safety
 
 - API failures: quiet retry with backoff; never crash the bot on a single failed answer.
+- Background escalation failure: if the async Opus call fails after retries, fall back to posting Sonnet's original answer as the reply (so the asker is never left with only the "escalating..." note).
 - Image download failures: fall back to text-only answer, note the image couldn't be read.
 - Bot never posts outside `GROUP_ID`.
 - No secrets committed; `.env` gitignored.
