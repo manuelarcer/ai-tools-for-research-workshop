@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  TALLER · "Inteligencia Artificial para la Investigación"
+  Design direction: SWISS / INTERNATIONAL TYPOGRAPHIC STYLE
+  (Müller-Brockmann / Bauhaus grid)
+  ----------------------------------------------------------------------------
+  · Palette: pure white #FFFFFF, black #0A0A0A, ONE signal red #E2231A,
+    optional mid-grey #9A9A9A. No other colors.
+  · Type: 'Space Grotesk' (display headlines) + 'Archivo' (body/grotesque),
+    with Helvetica Neue / Arial system fallbacks. NO Inter.
+  · Layout: strict, VISIBLE 12-column grid (faint column lines as motif),
+    big red section numerals, flush-left blocks, generous negative space.
+  · Transition: a signal-red color-block sweeps across (~280ms) then reveals
+    the next slide. Direction-aware. Crisp, mechanical. No fade-mush.
+    Respects prefers-reduced-motion (instant cut).
+
+  CONTROLS
+  · Next .... Right Arrow / Space / PageDown / click right ~60% of screen
+  · Prev .... Left Arrow / PageUp / click left ~40% of screen
+  · First ... Home          Last ... End
+  · Fullscreen ... key "F"
+  · Touch ... swipe left = next, swipe right = prev
+  · Jump ... click any segment in the progress bar (top), or a counter dot
+
+  EDITING
+  · Each slide is one <section class="slide" data-...> block, commented and
+    self-contained. Duplicate/reorder blocks freely; JS auto-counts them.
+  · Reusable helper classes: .eyebrow .num .headline .lead .sub .foot
+    .grid12 + .col-N / .start-N for placing blocks on the 12-col grid.
+  ============================================================================
+-->
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inteligencia Artificial para la Investigación · Taller</title>
+
+<!-- Google Fonts (with robust system fallbacks declared in CSS) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+/* ===========================================================================
+   1. TOKENS
+   =========================================================================== */
+:root{
+  --white:#FFFFFF;
+  --black:#0A0A0A;
+  --red:#E2231A;
+  --grey:#9A9A9A;
+
+  --font-display:'Space Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif;
+  --font-body:'Archivo','Helvetica Neue',Helvetica,Arial,sans-serif;
+
+  /* page margins for the active grid; matched to the column-line motif */
+  --margin-x:6.5vw;
+  --margin-y:7vh;
+  --gutter:1.6vw;
+
+  --rule:1px;            /* hairline weight              */
+  --rule-strong:3px;     /* heavy Swiss rule weight      */
+  --sweep:280ms;         /* transition duration          */
+  --ease:cubic-bezier(.76,0,.24,1); /* mechanical ease   */
+}
+
+/* ===========================================================================
+   2. RESET / STAGE
+   =========================================================================== */
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;width:100%;overflow:hidden;background:var(--black);}
+body{
+  font-family:var(--font-body);
+  color:var(--black);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* The deck is a fixed 16:9 stage, letterboxed and centered on any screen. */
+#stage-wrap{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--black);
+}
+#stage{
+  position:relative;
+  width:100vw;height:56.25vw;       /* 16:9 */
+  max-height:100vh;max-width:177.78vh;
+  background:var(--white);
+  overflow:hidden;
+}
+
+/* ===========================================================================
+   3. THE 12-COLUMN GRID MOTIF (faint vertical lines behind everything)
+   =========================================================================== */
+#grid-motif{
+  position:absolute;
+  top:0;bottom:0;
+  left:var(--margin-x);right:var(--margin-x);
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:var(--gutter);
+  pointer-events:none;
+  z-index:1;
+}
+#grid-motif span{
+  border-left:var(--rule) solid rgba(10,10,10,.06);
+}
+#grid-motif span:last-child{
+  border-right:var(--rule) solid rgba(10,10,10,.06);
+}
+
+/* a single thin baseline rule near the top — Swiss "header band" */
+#header-rule{
+  position:absolute;
+  top:var(--margin-y);
+  left:var(--margin-x);right:var(--margin-x);
+  height:var(--rule);
+  background:var(--black);
+  z-index:2;
+}
+
+/* ===========================================================================
+   4. SLIDES
+   =========================================================================== */
+.slide{
+  position:absolute;inset:0;
+  z-index:3;
+  padding:var(--margin-y) var(--margin-x);
+  display:none;                 /* exactly one shown via .is-active     */
+  opacity:0;
+}
+.slide.is-active{display:block;opacity:1;}
+
+/* The content grid each slide places blocks on (12 cols, flush-left). */
+.grid12{
+  position:relative;
+  height:100%;
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  grid-template-rows:auto;
+  gap:0 var(--gutter);
+  align-content:start;
+}
+
+/* span / start helpers */
+.col-2{grid-column:span 2;} .col-3{grid-column:span 3;} .col-4{grid-column:span 4;}
+.col-5{grid-column:span 5;} .col-6{grid-column:span 6;} .col-7{grid-column:span 7;}
+.col-8{grid-column:span 8;} .col-9{grid-column:span 9;} .col-10{grid-column:span 10;}
+.col-11{grid-column:span 11;} .col-12{grid-column:span 12;}
+.start-1{grid-column-start:1;} .start-2{grid-column-start:2;}
+.start-3{grid-column-start:3;} .start-4{grid-column-start:4;}
+.start-5{grid-column-start:5;} .start-6{grid-column-start:6;}
+.start-7{grid-column-start:7;} .start-8{grid-column-start:8;}
+
+/* ===========================================================================
+   5. TYPOGRAPHIC COMPONENTS
+   =========================================================================== */
+.eyebrow{
+  font-family:var(--font-body);
+  font-weight:600;
+  font-size:clamp(13px,1.25vw,20px);
+  letter-spacing:.22em;
+  text-transform:uppercase;
+}
+.eyebrow .dot{color:var(--red);}
+
+/* the big red section numeral, e.g. "03" */
+.num{
+  font-family:var(--font-display);
+  font-weight:500;
+  font-size:clamp(60px,11vw,200px);
+  line-height:.82;
+  color:var(--red);
+  letter-spacing:-.02em;
+  font-feature-settings:"tnum" 1;
+}
+
+/* display headline */
+.headline{
+  font-family:var(--font-display);
+  font-weight:700;
+  line-height:.92;
+  letter-spacing:-.025em;
+  font-size:clamp(34px,6.2vw,108px);
+  color:var(--black);
+  text-wrap:balance;
+}
+.headline.med{font-size:clamp(30px,4.6vw,78px);}
+.headline.sm{font-size:clamp(26px,3.4vw,56px);}
+.headline .red{color:var(--red);}
+
+/* large editorial "lead" quote-style statement (Archivo, tight) */
+.lead{
+  font-family:var(--font-display);
+  font-weight:500;
+  line-height:1.02;
+  letter-spacing:-.02em;
+  font-size:clamp(28px,4.4vw,72px);
+  color:var(--black);
+  text-wrap:balance;
+}
+.lead .red{color:var(--red);}
+
+/* body / sub text — always >= 22px on a real projector */
+.sub{
+  font-family:var(--font-body);
+  font-weight:400;
+  font-size:clamp(18px,1.9vw,30px);
+  line-height:1.35;
+  color:var(--black);
+  max-width:38ch;
+}
+.sub.grey{color:var(--grey);}
+
+.kicker{
+  font-family:var(--font-body);
+  font-weight:600;
+  font-size:clamp(15px,1.45vw,24px);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--black);
+}
+.kicker.red{color:var(--red);}
+
+.foot{
+  font-family:var(--font-body);
+  font-weight:500;
+  font-size:clamp(14px,1.35vw,22px);
+  letter-spacing:.02em;
+  color:var(--black);
+}
+.foot .grey{color:var(--grey);}
+
+/* small red square bullet — the only "decoration" allowed */
+.sqbul::before{
+  content:"";
+  display:inline-block;
+  width:.62em;height:.62em;
+  margin-right:.55em;
+  background:var(--red);
+  transform:translateY(-.04em);
+}
+
+/* a strong red rule used as a divider / underline accent */
+.redrule{height:var(--rule-strong);background:var(--red);width:100%;}
+.blackrule{height:var(--rule-strong);background:var(--black);width:100%;}
+
+/* ===========================================================================
+   6. SLIDE-SPECIFIC LAYOUT BLOCKS
+   =========================================================================== */
+
+/* generic vertical stack within a grid column */
+.stack{display:flex;flex-direction:column;}
+.stack.gap-s>*+*{margin-top:1.1vh;}
+.stack.gap-m>*+*{margin-top:2.2vh;}
+.stack.gap-l>*+*{margin-top:3.6vh;}
+
+/* agenda: two-column numbered index list */
+.agenda-list{list-style:none;display:flex;flex-direction:column;}
+.agenda-list li{
+  display:flex;align-items:baseline;gap:1.1vw;
+  padding:1.05vh 0;
+  border-top:var(--rule) solid rgba(10,10,10,.16);
+  font-family:var(--font-body);
+}
+.agenda-list li:last-child{border-bottom:var(--rule) solid rgba(10,10,10,.16);}
+.agenda-list .ix{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:clamp(15px,1.6vw,26px);
+  color:var(--red);
+  min-width:2.4ch;text-align:right;
+  font-feature-settings:"tnum" 1;
+}
+.agenda-list .tx{
+  font-weight:500;
+  font-size:clamp(16px,1.55vw,26px);
+  line-height:1.2;
+  color:var(--black);
+}
+
+/* tool-panorama: four hard-edged category panels, no rounded corners */
+.panels{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:var(--gutter);
+  align-self:stretch;
+  margin-top:auto;
+}
+.panel{
+  border-top:var(--rule-strong) solid var(--black);
+  padding-top:1.6vh;
+  display:flex;flex-direction:column;
+}
+.panel.red-top{border-top-color:var(--red);}
+.panel .pn{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:clamp(13px,1.25vw,22px);
+  letter-spacing:.02em;
+  line-height:1.05;
+  margin-bottom:1.4vh;
+  color:var(--black);
+}
+.panel .pn .r{color:var(--red);}
+.panel ul{list-style:none;}
+.panel li{
+  font-family:var(--font-body);
+  font-weight:400;
+  font-size:clamp(15px,1.5vw,24px);
+  line-height:1.18;
+  padding:.62vh 0;
+  border-top:var(--rule) solid rgba(10,10,10,.14);
+  color:var(--black);
+}
+
+/* numbered-principle grid (prompting / ethics): 4 quadrant blocks */
+.quad{
+  grid-column:1 / -1;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:1fr 1fr;
+  gap:0;
+  align-self:stretch;
+  margin-top:2.4vh;
+  border-top:var(--rule) solid rgba(10,10,10,.18);
+  border-left:var(--rule) solid rgba(10,10,10,.18);
+}
+.qcell{
+  border-right:var(--rule) solid rgba(10,10,10,.18);
+  border-bottom:var(--rule) solid rgba(10,10,10,.18);
+  padding:2.4vh 2vw;
+  display:flex;flex-direction:column;
+}
+.qcell .qi{
+  font-family:var(--font-display);
+  font-weight:500;
+  font-size:clamp(28px,3.6vw,58px);
+  line-height:.85;
+  color:var(--red);
+  margin-bottom:1.1vh;
+  font-feature-settings:"tnum" 1;
+}
+.qcell .qt{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:clamp(17px,1.7vw,30px);
+  letter-spacing:-.01em;
+  color:var(--black);
+  margin-bottom:.7vh;
+}
+.qcell .qd{
+  font-family:var(--font-body);
+  font-weight:400;
+  font-size:clamp(14px,1.4vw,23px);
+  line-height:1.25;
+  color:var(--black);
+  max-width:34ch;
+}
+.qcell .qd em{font-style:normal;color:var(--red);font-weight:500;}
+
+/* a callout band (tips / warnings) — left red bar, never a rounded card */
+.callout{
+  border-left:var(--rule-strong) solid var(--red);
+  padding-left:1.4vw;
+}
+.callout .lbl{
+  font-family:var(--font-body);
+  font-weight:600;
+  font-size:clamp(12px,1.15vw,19px);
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--red);
+  display:block;margin-bottom:.5vh;
+}
+.callout .ct{
+  font-family:var(--font-body);
+  font-weight:500;
+  font-size:clamp(16px,1.6vw,26px);
+  line-height:1.25;
+  color:var(--black);
+  max-width:40ch;
+}
+
+/* big numbered step list (exercise) */
+.steps{list-style:none;display:flex;flex-direction:column;}
+.steps li{
+  display:flex;align-items:baseline;gap:1.2vw;
+  padding:1.5vh 0;
+  border-top:var(--rule) solid rgba(10,10,10,.16);
+}
+.steps li:last-child{border-bottom:var(--rule) solid rgba(10,10,10,.16);}
+.steps .si{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:clamp(20px,2.2vw,38px);
+  color:var(--red);min-width:1.6ch;
+  font-feature-settings:"tnum" 1;
+}
+.steps .st{
+  font-family:var(--font-body);
+  font-weight:500;
+  font-size:clamp(16px,1.65vw,27px);
+  line-height:1.22;color:var(--black);
+}
+
+/* "three points" row used on slide 3 */
+.three{
+  grid-column:1 / -1;
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:var(--gutter);
+  margin-top:auto;
+}
+.three .item{
+  border-top:var(--rule-strong) solid var(--red);
+  padding-top:1.5vh;
+}
+.three .item .n{
+  font-family:var(--font-display);font-weight:600;
+  font-size:clamp(14px,1.3vw,22px);color:var(--red);
+  letter-spacing:.04em;margin-bottom:.8vh;
+}
+.three .item .t{
+  font-family:var(--font-display);font-weight:600;
+  font-size:clamp(18px,1.9vw,32px);line-height:1.05;
+  letter-spacing:-.01em;color:var(--black);
+}
+
+/* resource list (closing) */
+.reslist{list-style:none;display:flex;flex-direction:column;}
+.reslist li{
+  display:flex;align-items:baseline;gap:1.1vw;
+  padding:1.7vh 0;
+  border-top:var(--rule) solid rgba(10,10,10,.18);
+}
+.reslist li:last-child{border-bottom:var(--rule) solid rgba(10,10,10,.18);}
+.reslist .rl{
+  font-family:var(--font-display);font-weight:600;
+  font-size:clamp(13px,1.2vw,21px);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--red);min-width:11ch;
+}
+.reslist .rv{
+  font-family:var(--font-body);font-weight:500;
+  font-size:clamp(16px,1.7vw,28px);color:var(--black);
+}
+
+/* ===========================================================================
+   7. ON-SCREEN UI: progress bar + counter + hint
+   =========================================================================== */
+#ui{
+  position:absolute;z-index:30;inset:0;pointer-events:none;
+  font-family:var(--font-body);
+}
+
+/* clickable segmented progress bar across the very top */
+#progress{
+  position:absolute;top:0;left:0;right:0;height:8px;
+  display:flex;gap:2px;padding:0;pointer-events:auto;
+  background:transparent;
+}
+#progress .seg{
+  flex:1;height:100%;
+  background:rgba(10,10,10,.12);
+  cursor:pointer;border:none;padding:0;
+  transition:background .18s var(--ease);
+}
+#progress .seg:hover{background:rgba(10,10,10,.30);}
+#progress .seg.done{background:var(--black);}
+#progress .seg.current{background:var(--red);}
+
+/* slide counter, bottom-left, monospace-tabular */
+#counter{
+  position:absolute;left:var(--margin-x);bottom:2.6vh;
+  font-family:var(--font-display);font-weight:500;
+  font-size:clamp(13px,1.2vw,20px);
+  letter-spacing:.06em;color:var(--black);
+  font-feature-settings:"tnum" 1;pointer-events:none;
+}
+#counter b{color:var(--red);font-weight:600;}
+
+/* running title slug, bottom-right */
+#slug{
+  position:absolute;right:var(--margin-x);bottom:2.6vh;
+  font-family:var(--font-body);font-weight:600;
+  font-size:clamp(11px,1.05vw,17px);letter-spacing:.18em;
+  text-transform:uppercase;color:var(--grey);
+  pointer-events:none;
+}
+
+/* ===========================================================================
+   8. THE RED COLOR-BLOCK SWEEP TRANSITION
+   =========================================================================== */
+#sweep{
+  position:absolute;inset:0;z-index:25;
+  background:var(--red);
+  transform:scaleX(0);
+  transform-origin:left center;     /* set per-direction in JS via class */
+  will-change:transform;
+  pointer-events:none;
+}
+/* forward: cover left->right, then uncover continuing to the right */
+#sweep.cover-fwd{
+  transform-origin:left center;
+  animation:coverFwd var(--sweep) var(--ease) forwards;
+}
+#sweep.cover-back{
+  transform-origin:right center;
+  animation:coverBack var(--sweep) var(--ease) forwards;
+}
+@keyframes coverFwd{
+  0%{transform:scaleX(0);transform-origin:left center;}
+  50%{transform:scaleX(1);transform-origin:left center;}
+  50.01%{transform:scaleX(1);transform-origin:right center;}
+  100%{transform:scaleX(0);transform-origin:right center;}
+}
+@keyframes coverBack{
+  0%{transform:scaleX(0);transform-origin:right center;}
+  50%{transform:scaleX(1);transform-origin:right center;}
+  50.01%{transform:scaleX(1);transform-origin:left center;}
+  100%{transform:scaleX(0);transform-origin:left center;}
+}
+
+/* incoming slide gets a tiny mechanical settle (no fade-mush) */
+.slide.is-active.enter-fwd .grid12{animation:settleFwd 320ms var(--ease);}
+.slide.is-active.enter-back .grid12{animation:settleBack 320ms var(--ease);}
+@keyframes settleFwd{from{transform:translateX(22px);}to{transform:translateX(0);}}
+@keyframes settleBack{from{transform:translateX(-22px);}to{transform:translateX(0);}}
+
+/* ===========================================================================
+   9. REDUCED MOTION — instant, crisp fallback (no animation)
+   =========================================================================== */
+@media (prefers-reduced-motion: reduce){
+  #sweep{display:none !important;}
+  .slide,.slide.is-active{opacity:1 !important;}
+  .slide.is-active.enter-fwd .grid12,
+  .slide.is-active.enter-back .grid12{animation:none !important;}
+  #progress .seg{transition:none !important;}
+}
+
+/* ===========================================================================
+   10. CLICK ZONES (prev / next) — invisible, below the UI chrome
+   =========================================================================== */
+.clickzone{position:absolute;top:8px;bottom:0;z-index:10;cursor:pointer;}
+#zone-prev{left:0;width:40%;}
+#zone-next{right:0;width:60%;}
+</style>
+</head>
+
+<body>
+<div id="stage-wrap">
+  <div id="stage" aria-label="Presentación: Inteligencia Artificial para la Investigación">
+
+    <!-- 12-column grid motif (faint vertical lines) drawn behind all slides -->
+    <div id="grid-motif" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span>
+    </div>
+    <div id="header-rule" aria-hidden="true"></div>
+
+    <!-- red color-block sweep element -->
+    <div id="sweep" aria-hidden="true"></div>
+
+    <!-- ===================================================================
+         SLIDE 01 · PORTADA
+         =================================================================== -->
+    <section class="slide" data-slug="Portada">
+      <div class="grid12">
+
+        <!-- eyebrow, top-left band -->
+        <div class="col-12" style="margin-top:1.2vh;">
+          <span class="eyebrow">Taller <span class="dot">·</span> Universidad</span>
+        </div>
+
+        <!-- big numeral, far left, low -->
+        <div class="col-2 start-1" style="margin-top:6vh;">
+          <div class="num">01</div>
+        </div>
+
+        <!-- title block, flush-left across most of the grid -->
+        <div class="col-9 start-3" style="margin-top:5.5vh;">
+          <h1 class="headline">Inteligencia<br>Artificial para la<br><span class="red">Investigación</span></h1>
+          <div class="redrule" style="margin:3vh 0 2.4vh;max-width:52%;"></div>
+          <p class="sub">Herramientas y flujos de trabajo para estudiantes e investigadores.</p>
+        </div>
+
+        <!-- footer row: speaker + hint -->
+        <div class="col-7 start-3" style="margin-top:auto;">
+          <p class="foot">Ponente: <span class="grey">[Nombre]</span> · <span class="grey">[Fecha]</span></p>
+        </div>
+        <div class="col-3 start-10" style="margin-top:auto;text-align:right;">
+          <p class="foot grey">Usa &larr; &rarr; o la barra espaciadora para avanzar</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SLIDE 02 · AGENDA DEL DÍA
+         =================================================================== -->
+    <section class="slide" data-slug="Agenda del día">
+      <div class="grid12">
+
+        <div class="col-3 start-1" style="margin-top:1vh;">
+          <div class="num">02</div>
+          <h2 class="headline sm" style="margin-top:3vh;">Agenda<br>del día</h2>
+        </div>
+
+        <!-- two balanced index columns -->
+        <div class="col-4 start-5" style="margin-top:1vh;">
+          <ul class="agenda-list">
+            <li><span class="ix">01</span><span class="tx">¿Por qué IA en la investigación?</span></li>
+            <li><span class="ix">02</span><span class="tx">Panorama de herramientas</span></li>
+            <li><span class="ix">03</span><span class="tx">Búsqueda y revisión de literatura</span></li>
+            <li><span class="ix">04</span><span class="tx">Lectura y síntesis de fuentes</span></li>
+            <li><span class="ix">05</span><span class="tx">Escritura académica asistida</span></li>
+          </ul>
+        </div>
+        <div class="col-4 start-9" style="margin-top:1vh;">
+          <ul class="agenda-list">
+            <li><span class="ix">06</span><span class="tx">Análisis de datos y código</span></li>
+            <li><span class="ix">07</span><span class="tx">Prompting efectivo</span></li>
+            <li><span class="ix">08</span><span class="tx">Ética e integridad académica</span></li>
+            <li><span class="ix">09</span><span class="tx">Ejercicio práctico</span></li>
+            <li><span class="ix">10</span><span class="tx">Recursos y cierre</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SLIDE 03 · ¿POR QUÉ IA EN LA INVESTIGACIÓN?
+         =================================================================== -->
+    <section class="slide" data-slug="Por qué IA">
+      <div class="grid12">
+
+        <div class="col-2 start-1" style="margin-top:1vh;">
+          <div class="num">03</div>
+        </div>
+        <div class="col-9 start-3" style="margin-top:1.4vh;">
+          <span class="kicker red">¿Por qué IA en la investigación?</span>
+        </div>
+
+        <!-- big statement -->
+        <div class="col-10 start-3" style="margin-top:5vh;">
+          <p class="lead">La IA generativa <span class="red">(LLMs)</span> no reemplaza el criterio del investigador: <span class="red">amplifica</span> su productividad.</p>
+        </div>
+
+        <!-- three orthogonal points anchored to the bottom -->
+        <div class="three">
+          <div class="item">
+            <div class="n">A</div>
+            <div class="t">Acelera tareas repetitivas</div>
+          </div>
+          <div class="item">
+            <div class="n">B</div>
+            <div class="t">Explora la literatura más rápido</div>
+          </div>
+          <div class="item">
+            <div class="n">C</div>
+            <div class="t">Itera ideas y borradores (drafts)</div>
+          </div>
+        </div>
+
+        <div class="col-12" style="margin-top:2.6vh;">
+          <span class="foot"><span class="sqbul"></span>Nota: <span class="grey">siempre con verificación humana.</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SLIDE 04 · PANORAMA DE HERRAMIENTAS (4 categorías)
+         =================================================================== -->
+    <section class="slide" data-slug="Panorama de herramientas">
+      <div class="grid12">
+
+        <div class="col-3 start-1" style="margin-top:1vh;">
+          <div class="num">04</div>
+        </div>
+        <div class="col-9 start-4" style="margin-top:2.4vh;">
+          <h2 class="headline med">Panorama de<br>herramientas</h2>
+        </div>
+
+        <!-- four hard-edged category panels (no rounded cards) -->
+        <div class="panels">
+          <div class="panel red-top">
+            <div class="pn"><span class="r">01</span> Búsqueda<br>&amp; literatura</div>
+            <ul>
+              <li>Elicit</li>
+              <li>Consensus</li>
+              <li>Semantic Scholar</li>
+              <li>Perplexity</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <div class="pn"><span class="r">02</span> Lectura<br>&amp; síntesis</div>
+            <ul>
+              <li>NotebookLM</li>
+              <li>ChatPDF</li>
+              <li>SciSpace</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <div class="pn"><span class="r">03</span> Escritura<br>&amp; edición</div>
+            <ul>
+              <li>ChatGPT</li>
+              <li>Claude</li>
+              <li>Paperpal</li>
+            </ul>
+          </div>
+          <div class="panel">
+            <div class="pn"><span class="r">04</span> Datos<br>&amp; código</div>
+            <ul>
+              <li>Claude</li>
+              <li>ChatGPT (Code Interpreter)</li>
+              <li>Julius AI</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SLIDE 05 · BÚSQUEDA Y REVISIÓN DE LITERATURA
+         =================================================================== -->
+    <section class="slide" data-slug="Búsqueda de literatura">
+      <div class="grid12">
+
+        <div class="col-2 start-1" style="margin-top:1vh;">
+          <div class="num">05</div>
+        </div>
+        <div class="col-9 start-3" style="margin-top:1.4vh;">
+          <span class="kicker red">Búsqueda y revisión de literatura</span>
+          <h2 class="headline sm" style="margin-top:2vh;">Encontrar y filtrar<br>literatura relevante</h2>
+        </div>
+
+        <!-- two tool descriptions, flush-left, with red index labels -->
+        <div class="col-5 start-3" style="margin-top:5vh;">
+          <div class="stack gap-m">
+            <div class="callout">
+              <span class="lbl">Elicit</span>
+              <span class="ct">Formula tu pregunta de investigación y extrae los <em style="font-style:normal;color:var(--red);font-weight:600;">findings</em> de los papers.</span>
+            </div>
+            <div class="callout">
+              <span class="lbl">Consensus</span>
+              <span class="ct">Respuestas basadas en evidencia científica.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- objective + tip, right column -->
+        <div class="col-4 start-9" style="margin-top:5vh;">
+          <div class="stack gap-l">
+            <div>
+              <span class="kicker">Objetivo</span>
+              <p class="sub" style="margin-top:1vh;">Encontrar y filtrar literatura relevante.</p>
+            </div>
+            <div class="callout">
+              <span class="lbl">Tip</span>
+              <span class="ct">Verifica siempre la fuente primaria (primary source).</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SLIDE 06 · LECTURA Y SÍNTESIS DE FUENTES
+         =================================================================== -->
+    <section class="slide" data-slug="Lectura y síntesis">
+      <div class="grid12">
+
+        <div class="col-2 start-1" style="margin-top:1vh;">
+          <div class="num">06</div>
+        </div>
+        <div class="col-9 start-3" style="margin-top:1.4vh;">
+          <span class="kicker red">Lectura y síntesis de fuentes</span>
+        </div>
+
+        <!-- NotebookLM as the headline tool -->
+        <div class="col-7 start-3" style="margin-top:4.5vh;">
+          <h2 class="headline sm"><span class="red">NotebookLM</span></h2>
+          <p class="sub" style="margin-top:2.2vh;max-width:32ch;">Sube tus PDFs y pregunta con citas a tus propios documentos.</p>
+        </div>
+
+        <!-- capabilities list, right -->
+        <div class="col-4 start-9" style="margin-top:4.5vh;">
+          <span class="kicker">Genera</span>
+          <ul class="agenda-list" style="margin-top:1.4vh;">
+            <li><span class="ix sqbul" style="min-width:0;"></span><span class="tx">Resúmenes</span></li>
+            <li><span class="ix sqbul" style="min-width:0;"></span><span class="tx">Líneas de tiempo</span></li>
+            <li><span class="ix sqbul" style="min-width:0;"></span><span class="tx">Mapas conceptuales</span></li>
+          </ul>
+        </div>
+
+        <!-- warning band along the bottom -->
+        <div class="col-12" style="margin-top:auto;">
+          <div class="callout">
+            <span class="lbl">Advertencia</span>
+            <span class="ct">Cuidado con las alucinaciones (hallucinations): verifica cada cita.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SLIDE 07 · ESCRITURA ACADÉMICA ASISTIDA
+         =================================================================== -->
+    <section class="slide" data-slug="Escritura asistida">
+      <div class="grid12">
+
+        <div class="col-2 start-1" style="margin-top:1vh;">
+          <div class="num">07</div>
+        </div>
+        <div class="col-9 start-3" style="margin-top:1.4vh;">
+          <span class="kicker red">Escritura académica asistida</span>
+        </div>
+
+        <!-- the central statement -->
+        <div class="col-9 start-3" style="margin-top:4.5vh;">
+          <p class="lead">El <span class="red">borrador</span> puede ser de la IA; la <span class="red">voz</span> y las <span class="red">ideas</span> son tuyas.</p>
+        </div>
+
+        <!-- usos row + integrity note -->
+        <div class="col-7 start-3" style="margin-top:auto;">
+          <span class="kicker">Usos</span>
+          <p class="headline sm" style="font-size:clamp(20px,2.3vw,40px);margin-top:1.2vh;line-height:1.06;">
+            estructurar <span class="red">·</span> parafrasear <span class="red">·</span> mejorar la claridad <span class="red">·</span> traducir
+          </p>
+        </div>
+        <div class="col-4 start-9" style="margin-top:auto;">
+          <div class="callout">
+            <span class="lbl">Integridad</span>
+            <span class="ct">Declara el uso de IA según la política de tu institución.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SLIDE 08 · ANÁLISIS DE DATOS Y CÓDIGO
+         =================================================================== -->
+    <section class="slide" data-slug="Datos y código">
+      <div class="grid12">
+
+        <div class="col-2 start-1" style="margin-top:1vh;">
+          <div class="num">08</div>
+        </div>
+        <div class="col-9 start-3" style="margin-top:1.4vh;">
+          <span class="kicker red">Análisis de datos y código</span>
+        </div>
+
+        <div class="col-7 start-3" style="margin-top:4.5vh;">
+          <p class="lead" style="font-size:clamp(24px,3.4vw,56px);">Pega tus datos o describe el problema; la IA <span class="red">genera y explica</span> código (Python / R).</p>
+        </div>
+
+        <!-- casos, right -->
+        <div class="col-4 start-9" style="margin-top:4.5vh;">
+          <span class="kicker">Casos</span>
+          <ul class="agenda-list" style="margin-top:1.4vh;">
+            <li><span class="ix sqbul" style="min-width:0;"></span><span class="tx">Limpieza de datos</span></li>
+            <li><span class="ix sqbul" style="min-width:0;"></span><span class="tx">Estadística descriptiva</span></li>
+            <li><span class="ix sqbul" style="min-width:0;"></span><span class="tx">Visualización</span></li>
+          </ul>
+        </div>
+
+        <div class="col-12" style="margin-top:auto;">
+          <div class="callout">
+            <span class="lbl">Tip</span>
+            <span class="ct">Pide que explique cada paso; no ejecutes código que no entiendas.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SLIDE 09 · PROMPTING EFECTIVO (4 principios)
+         =================================================================== -->
+    <section class="slide" data-slug="Prompting efectivo">
+      <div class="grid12">
+
+        <div class="col-3 start-1" style="margin-top:1vh;">
+          <div class="num">09</div>
+        </div>
+        <div class="col-9 start-4" style="margin-top:2.4vh;">
+          <h2 class="headline med">Prompting<br>efectivo</h2>
+        </div>
+
+        <!-- 2x2 quadrant of the four principles -->
+        <div class="quad">
+          <div class="qcell">
+            <div class="qi">01</div>
+            <div class="qt">Rol</div>
+            <div class="qd">Asigna un rol: <em>"Actúa como revisor de metodología"</em>.</div>
+          </div>
+          <div class="qcell">
+            <div class="qi">02</div>
+            <div class="qt">Contexto</div>
+            <div class="qd">Da contexto, objetivo y audiencia.</div>
+          </div>
+          <div class="qcell">
+            <div class="qi">03</div>
+            <div class="qt">Ejemplos</div>
+            <div class="qd">Muestra ejemplos del formato deseado (few-shot).</div>
+          </div>
+          <div class="qcell">
+            <div class="qi">04</div>
+            <div class="qt">Formato</div>
+            <div class="qd">Especifica estructura y longitud de la salida (output).</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SLIDE 10 · ÉTICA E INTEGRIDAD ACADÉMICA
+         =================================================================== -->
+    <section class="slide" data-slug="Ética e integridad">
+      <div class="grid12">
+
+        <div class="col-3 start-1" style="margin-top:1vh;">
+          <div class="num">10</div>
+        </div>
+        <div class="col-9 start-4" style="margin-top:2.4vh;">
+          <h2 class="headline med">Ética e integridad<br>académica</h2>
+        </div>
+
+        <!-- 2x2 quadrant -->
+        <div class="quad">
+          <div class="qcell">
+            <div class="qi">01</div>
+            <div class="qt">Verificación</div>
+            <div class="qd">La IA puede inventar datos y referencias.</div>
+          </div>
+          <div class="qcell">
+            <div class="qi">02</div>
+            <div class="qt">Transparencia</div>
+            <div class="qd">Cita el uso de IA.</div>
+          </div>
+          <div class="qcell">
+            <div class="qi">03</div>
+            <div class="qt">Privacidad</div>
+            <div class="qd">No subas datos sensibles o confidenciales.</div>
+          </div>
+          <div class="qcell">
+            <div class="qi">04</div>
+            <div class="qt">Sesgos (bias)</div>
+            <div class="qd">Los modelos reflejan los sesgos de sus datos.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SLIDE 11 · EJERCICIO PRÁCTICO
+         =================================================================== -->
+    <section class="slide" data-slug="Ejercicio práctico">
+      <div class="grid12">
+
+        <div class="col-2 start-1" style="margin-top:1vh;">
+          <div class="num">11</div>
+        </div>
+        <div class="col-9 start-3" style="margin-top:1.4vh;">
+          <span class="kicker red">Ejercicio práctico</span>
+          <h2 class="headline sm" style="margin-top:2vh;">Elige un paper<br>de tu área</h2>
+        </div>
+
+        <!-- numbered steps, left -->
+        <div class="col-7 start-3" style="margin-top:4.4vh;">
+          <ul class="steps">
+            <li><span class="si">1</span><span class="st">Resume su contribución con una herramienta.</span></li>
+            <li><span class="si">2</span><span class="st">Formula 3 preguntas críticas.</span></li>
+            <li><span class="si">3</span><span class="st">Verifica una afirmación contra la fuente.</span></li>
+          </ul>
+        </div>
+
+        <!-- meta block, right -->
+        <div class="col-4 start-9" style="margin-top:4.4vh;align-self:start;">
+          <span class="kicker">Meta</span>
+          <p class="headline sm" style="font-size:clamp(30px,4vw,64px);margin-top:1.4vh;line-height:.92;">
+            <span class="red">15</span><br>minutos
+          </p>
+          <div class="redrule" style="margin:2.4vh 0 1.4vh;max-width:60%;"></div>
+          <p class="sub">En parejas.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         SLIDE 12 · RECURSOS Y CIERRE
+         =================================================================== -->
+    <section class="slide" data-slug="Recursos y cierre">
+      <div class="grid12">
+
+        <div class="col-2 start-1" style="margin-top:1vh;">
+          <div class="num">12</div>
+        </div>
+        <div class="col-9 start-3" style="margin-top:1.4vh;">
+          <span class="kicker red">Recursos y cierre</span>
+        </div>
+
+        <div class="col-7 start-3" style="margin-top:4vh;">
+          <h2 class="headline med"><span class="red">Gracias.</span></h2>
+          <ul class="reslist" style="margin-top:3vh;">
+            <li><span class="rl">Diapositivas</span><span class="rv">Guía de prompts: [enlace]</span></li>
+            <li><span class="rl">Preguntas</span><span class="rv">Q&amp;A</span></li>
+            <li><span class="rl">Contacto</span><span class="rv">[correo de contacto]</span></li>
+          </ul>
+        </div>
+
+        <!-- big closing numeral motif, right -->
+        <div class="col-4 start-9" style="margin-top:auto;text-align:right;">
+          <p class="foot grey">Inteligencia Artificial<br>para la Investigación</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         ON-SCREEN UI + CLICK ZONES
+         =================================================================== -->
+    <div id="ui" aria-hidden="false">
+      <div id="progress" role="tablist" aria-label="Ir a una diapositiva"></div>
+      <div id="counter"><b id="cur">01</b> / <span id="total">12</span></div>
+      <div id="slug" aria-live="polite"></div>
+    </div>
+
+    <div id="zone-prev" class="clickzone" aria-label="Diapositiva anterior"></div>
+    <div id="zone-next" class="clickzone" aria-label="Diapositiva siguiente"></div>
+
+  </div><!-- /#stage -->
+</div><!-- /#stage-wrap -->
+
+<script>
+/* ============================================================================
+   PRESENTATION ENGINE — vanilla JS, works via file://
+   ============================================================================ */
+(function(){
+  "use strict";
+
+  var slides   = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total    = slides.length;
+  var sweep    = document.getElementById('sweep');
+  var progress = document.getElementById('progress');
+  var curEl    = document.getElementById('cur');
+  var totalEl  = document.getElementById('total');
+  var slugEl   = document.getElementById('slug');
+
+  var index    = 0;        // active slide index
+  var busy     = false;    // lock during a transition
+  var SWEEP_MS = 280;      // must match --sweep
+
+  // Respect reduced-motion: skip the sweep entirely.
+  var reduceMotion = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ----- pad helper: 1 -> "01" ----- */
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  /* ----- build the clickable segmented progress bar ----- */
+  var segs = [];
+  for (var i = 0; i < total; i++){
+    var b = document.createElement('button');
+    b.className = 'seg';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-label','Diapositiva ' + pad(i+1));
+    (function(target){
+      b.addEventListener('click', function(e){
+        e.stopPropagation();
+        goTo(target);
+      });
+    })(i);
+    progress.appendChild(b);
+    segs.push(b);
+  }
+  totalEl.textContent = pad(total);
+
+  /* ----- reflect state into UI chrome ----- */
+  function paintUI(){
+    curEl.textContent = pad(index + 1);
+    slugEl.textContent = slides[index].getAttribute('data-slug') || '';
+    for (var i = 0; i < segs.length; i++){
+      segs[i].classList.remove('done','current');
+      if (i < index) segs[i].classList.add('done');
+      else if (i === index) segs[i].classList.add('current');
+    }
+  }
+
+  /* ----- show a slide instantly (used internally) ----- */
+  function reveal(next, dir){
+    slides.forEach(function(s){
+      s.classList.remove('is-active','enter-fwd','enter-back');
+    });
+    var el = slides[next];
+    el.classList.add('is-active', dir >= 0 ? 'enter-fwd' : 'enter-back');
+    index = next;
+    paintUI();
+  }
+
+  /* ----- core navigation with the red color-block sweep ----- */
+  function goTo(next){
+    if (busy) return;
+    next = Math.max(0, Math.min(total - 1, next));
+    if (next === index) return;
+
+    var dir = next > index ? 1 : -1;
+
+    if (reduceMotion){
+      reveal(next, dir);          // instant, crisp fallback
+      return;
+    }
+
+    busy = true;
+    // arm the sweep in the correct direction
+    sweep.classList.remove('cover-fwd','cover-back');
+    // force reflow so re-adding the class restarts the animation
+    void sweep.offsetWidth;
+    sweep.classList.add(dir > 0 ? 'cover-fwd' : 'cover-back');
+
+    // swap the slide content at the midpoint, while the red block covers it
+    window.setTimeout(function(){
+      reveal(next, dir);
+    }, SWEEP_MS / 2);
+
+    // unlock after the sweep fully clears
+    window.setTimeout(function(){
+      sweep.classList.remove('cover-fwd','cover-back');
+      busy = false;
+    }, SWEEP_MS + 20);
+  }
+
+  function nextSlide(){ goTo(index + 1); }
+  function prevSlide(){ goTo(index - 1); }
+
+  /* ----- fullscreen toggle ----- */
+  function toggleFullscreen(){
+    var el = document.documentElement;
+    if (!document.fullscreenElement &&
+        !document.webkitFullscreenElement){
+      (el.requestFullscreen || el.webkitRequestFullscreen ||
+       function(){}).call(el);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen ||
+       function(){}).call(document);
+    }
+  }
+
+  /* ----- keyboard ----- */
+  document.addEventListener('keydown', function(e){
+    switch (e.key){
+      case 'ArrowRight':
+      case 'PageDown':
+        e.preventDefault(); nextSlide(); break;
+      case ' ':            // Space
+      case 'Spacebar':
+        e.preventDefault(); nextSlide(); break;
+      case 'ArrowLeft':
+      case 'PageUp':
+        e.preventDefault(); prevSlide(); break;
+      case 'Home':
+        e.preventDefault(); goTo(0); break;
+      case 'End':
+        e.preventDefault(); goTo(total - 1); break;
+      case 'f':
+      case 'F':
+        e.preventDefault(); toggleFullscreen(); break;
+      default: break;
+    }
+  });
+
+  /* ----- click zones (prev 40% / next 60%) ----- */
+  document.getElementById('zone-next')
+    .addEventListener('click', function(){ nextSlide(); });
+  document.getElementById('zone-prev')
+    .addEventListener('click', function(){ prevSlide(); });
+
+  /* ----- touch swipe ----- */
+  var tsx = 0, tsy = 0, tracking = false;
+  var stage = document.getElementById('stage');
+  stage.addEventListener('touchstart', function(e){
+    if (!e.changedTouches || !e.changedTouches.length) return;
+    tsx = e.changedTouches[0].clientX;
+    tsy = e.changedTouches[0].clientY;
+    tracking = true;
+  }, {passive:true});
+  stage.addEventListener('touchend', function(e){
+    if (!tracking || !e.changedTouches || !e.changedTouches.length) return;
+    tracking = false;
+    var dx = e.changedTouches[0].clientX - tsx;
+    var dy = e.changedTouches[0].clientY - tsy;
+    // horizontal intent, with a sensible threshold
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)){
+      if (dx < 0) nextSlide(); else prevSlide();
+    }
+  }, {passive:true});
+
+  /* ----- init ----- */
+  slides[0].classList.add('is-active');
+  paintUI();
+
+})();
+</script>
+</body>
+</html>

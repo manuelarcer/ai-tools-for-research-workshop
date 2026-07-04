@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  TALLER · "Inteligencia Artificial para la Investigación"
+  Slide deck standalone (file://) — Diseño: "COLOR MEXICANO"
+  ----------------------------------------------------------------------------
+  DIRECCIÓN DE DISEÑO
+    Inspirado en Luis Barragán y el modernismo mexicano: grandes planos de
+    color plano, muros geométricos, asimetría sobria. UNA tinta dominante por
+    sección, recorriendo la paleta: terracota, rosa mexicano, ocre, cobalto.
+    Tipografía: 'Fraunces' (serif suave de alto contraste) para titulares;
+    'Archivo' (grotesca limpia) para cuerpo. Tinta café profundo para texto.
+
+  TRANSICIÓN
+    "Color-block wipe": un panel sólido de color barre la pantalla en
+    diagonal (~520ms) cubriendo la diapositiva saliente y descubriendo la
+    entrante — el color mismo conduce el movimiento.
+    prefers-reduced-motion: reduce -> sólo fundido de opacidad.
+
+  CONTROLES (todos implementados)
+    Avanzar : Flecha derecha · Barra espaciadora · AvPág · clic ~60% derecho
+    Retroceder : Flecha izquierda · RePág · clic en zona izquierda
+    Inicio : Home   ·   Final : End   ·   Pantalla completa : tecla "F"
+    Táctil : swipe izquierda/derecha
+    UI fija : contador "03 / 12" + indicador de progreso clicable (salto)
+
+  EDICIÓN
+    Cada diapositiva es un bloque <section class="slide" data-tint="..."> bien
+    comentado y fácilmente editable. data-tint asigna el color dominante.
+  ============================================================================
+-->
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inteligencia Artificial para la Investigación · Taller</title>
+
+<!-- Google Fonts: Fraunces (display) + Archivo (cuerpo). Fallbacks robustos abajo. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ===========================================================================
+   1. TOKENS — Paleta "Color mexicano"
+   =========================================================================== */
+:root{
+  --paper:   #F7F1E7;   /* off-white cálido (lienzo base)            */
+  --ink:     #2B211C;   /* café profundo (texto)                     */
+  --ink-70:  rgba(43,33,28,.70);
+  --ink-45:  rgba(43,33,28,.45);
+
+  /* Bloques de color (uno dominante por sección) */
+  --terra:   #C8553D;   /* terracota   */
+  --rosa:    #E14B7E;   /* rosa mexicano */
+  --ocre:    #E9B949;   /* ocre / amarillo */
+  --cobalt:  #2E5EAA;   /* azul cobalto */
+
+  /* Tinta activa (la cambia cada slide vía data-tint) */
+  --tint:      var(--terra);
+  --tint-soft: rgba(200,85,61,.14);
+  --on-tint:   #F7F1E7;   /* texto sobre la tinta */
+
+  /* Tipografía */
+  --display: "Fraunces", "Hoefler Text", "Georgia", "Times New Roman", serif;
+  --body:    "Archivo", "Helvetica Neue", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+
+  --wipe-ms: 520ms;
+}
+
+/* ===========================================================================
+   2. BASE
+   =========================================================================== */
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ height:100%; }
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--body);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* Stage 16:9 — ocupa el viewport completo */
+#stage{ position:fixed; inset:0; background:var(--paper); }
+
+/* ---- Diapositiva: full-viewport, sólo UNA visible ---- */
+.slide{
+  position:absolute; inset:0;
+  display:none;
+  padding:clamp(40px, 6vw, 92px);
+  background:var(--paper);
+  /* grilla base ligeramente asimétrica (muro Barragán + contenido) */
+}
+.slide.active{ display:block; }
+
+/* Nº de slide marca-agua + acento de tinta por slide */
+.slide{ --tint:var(--terra); --tint-soft:rgba(200,85,61,.14); }
+.slide[data-tint="terra"] { --tint:var(--terra);  --tint-soft:rgba(200,85,61,.14); }
+.slide[data-tint="rosa"]  { --tint:var(--rosa);   --tint-soft:rgba(225,75,126,.13); }
+.slide[data-tint="ocre"]  { --tint:var(--ocre);   --tint-soft:rgba(233,185,73,.20); --on-tint:#2B211C; }
+.slide[data-tint="cobalt"]{ --tint:var(--cobalt); --tint-soft:rgba(46,94,170,.14); }
+
+/* ===========================================================================
+   3. TIPOGRAFÍA / ELEMENTOS COMUNES
+   =========================================================================== */
+.eyebrow{
+  font-family:var(--body);
+  font-weight:600;
+  font-size:clamp(13px,1.15vw,17px);
+  letter-spacing:.26em;
+  text-transform:uppercase;
+  color:var(--tint);
+}
+h1{
+  font-family:var(--display);
+  font-weight:600;
+  font-size:clamp(44px, 7.4vw, 116px);
+  line-height:.96;
+  letter-spacing:-.018em;
+  font-optical-sizing:auto;
+}
+h2{
+  font-family:var(--display);
+  font-weight:600;
+  font-size:clamp(34px, 5.4vw, 78px);
+  line-height:1.0;
+  letter-spacing:-.015em;
+}
+h2 em{ font-style:italic; color:var(--tint); }
+.lede{
+  font-family:var(--body);
+  font-weight:400;
+  font-size:clamp(20px, 2.0vw, 30px);
+  line-height:1.4;
+  max-width:24ch;
+  color:var(--ink-70);
+}
+.big-quote{
+  font-family:var(--display);
+  font-weight:500;
+  font-style:italic;
+  font-size:clamp(30px, 4.6vw, 68px);
+  line-height:1.08;
+  letter-spacing:-.012em;
+}
+p,li{ font-size:clamp(18px,1.55vw,24px); line-height:1.5; } /* cuerpo ≥22px en proyección */
+
+/* Cabecera de sección (kicker + número grande de la sección) */
+.kicker{ display:flex; align-items:baseline; gap:18px; margin-bottom:clamp(18px,2.4vh,34px); }
+.kicker .sec-no{
+  font-family:var(--display); font-weight:700; font-style:italic;
+  font-size:clamp(20px,2vw,30px); color:var(--tint);
+}
+
+/* Etiqueta-píldora sobre la tinta */
+.tag{
+  display:inline-block;
+  font-family:var(--body); font-weight:600;
+  font-size:clamp(13px,1vw,15px);
+  letter-spacing:.04em;
+  padding:.42em .9em;
+  background:var(--tint); color:var(--on-tint);
+}
+/* Términos técnicos en inglés: marcados sutilmente, NUNCA traducidos */
+.tech{ font-style:italic; }
+
+/* Nota / advertencia (banda con borde de tinta) */
+.note{
+  margin-top:auto;
+  display:flex; align-items:center; gap:14px;
+  font-size:clamp(16px,1.35vw,21px);
+  color:var(--ink-70);
+  border-left:5px solid var(--tint);
+  padding:.55em 0 .55em 18px;
+  max-width:60ch;
+}
+.note strong{ color:var(--ink); font-weight:600; }
+.note.warn{ background:var(--tint-soft); padding-right:18px; }
+
+/* ===========================================================================
+   4. "MUROS" DE COLOR (planos planos geométricos, asimétricos)
+   =========================================================================== */
+/* Plano vertical dominante a la derecha — el "muro" de cada slide de contenido */
+.wall-r{
+  position:absolute; top:0; right:0; bottom:0;
+  width:38%;
+  background:var(--tint);
+  z-index:0;
+}
+.wall-r.thin{ width:22%; }
+/* Plano horizontal inferior (base) */
+.wall-b{
+  position:absolute; left:0; right:0; bottom:0;
+  height:18%;
+  background:var(--tint);
+  z-index:0;
+}
+/* Pequeña ventana / escalón cromático (acento Barragán) */
+.notch{ position:absolute; z-index:0; background:var(--ink); opacity:.92; }
+
+/* El contenido vive por encima de los muros */
+.content{ position:relative; z-index:2; height:100%; display:flex; flex-direction:column; }
+
+/* Número gigante de slide como marca de agua arquitectónica */
+.ghost-no{
+  position:absolute; z-index:1;
+  font-family:var(--display); font-weight:900;
+  font-size:clamp(180px, 34vw, 560px);
+  line-height:.7;
+  color:var(--ink);
+  opacity:.05;
+  user-select:none; pointer-events:none;
+}
+
+/* ===========================================================================
+   5. LAYOUTS ESPECÍFICOS
+   =========================================================================== */
+
+/* --- Portada --- */
+.cover{ padding:0; }
+.cover .band{
+  position:absolute; top:0; bottom:0; right:0; width:30%;
+  background:var(--terra); z-index:0;
+}
+.cover .band.b2{ width:18%; background:var(--ocre); }
+.cover .band.b3{ width:9%;  background:var(--rosa); }
+.cover .inner{
+  position:relative; z-index:2; height:100%;
+  display:flex; flex-direction:column; justify-content:center;
+  padding:clamp(40px,6vw,96px);
+  max-width:70%;
+}
+.cover .foot{
+  position:absolute; left:clamp(40px,6vw,96px); bottom:clamp(34px,5vh,60px);
+  z-index:2; display:flex; flex-direction:column; gap:6px;
+}
+.cover .foot .by{ font-weight:600; font-size:clamp(16px,1.4vw,22px); }
+.cover .foot .hint{ font-size:clamp(14px,1.1vw,17px); color:var(--ink-45); }
+
+/* --- Agenda (lista numerada en dos columnas) --- */
+.agenda-grid{
+  display:grid; grid-template-columns:1fr 1fr;
+  column-gap:clamp(40px,5vw,90px); row-gap:clamp(8px,1.3vh,16px);
+  margin-top:auto; margin-bottom:auto;
+}
+.agenda-grid ol{ list-style:none; counter-reset:none; }
+.ag-item{
+  display:flex; align-items:baseline; gap:16px;
+  padding:.32em 0;
+  border-bottom:1px solid rgba(43,33,28,.12);
+}
+.ag-item .n{
+  font-family:var(--display); font-weight:700; font-style:italic;
+  font-size:clamp(18px,1.6vw,24px); color:var(--tint);
+  min-width:1.6ch; text-align:right;
+}
+.ag-item .t{ font-size:clamp(17px,1.5vw,23px); font-weight:500; }
+
+/* --- Tres / cuatro columnas de puntos --- */
+.cols{ display:grid; gap:clamp(20px,2.6vw,40px); margin-top:auto; margin-bottom:auto; }
+.cols.c3{ grid-template-columns:repeat(3,1fr); }
+.cols.c4{ grid-template-columns:repeat(4,1fr); }
+.col h3{
+  font-family:var(--display); font-weight:600;
+  font-size:clamp(22px,2.2vw,34px); line-height:1.05;
+  letter-spacing:-.01em; margin-bottom:.4em;
+  padding-bottom:.32em;
+  border-bottom:3px solid var(--tint);
+}
+.col p{ color:var(--ink-70); font-size:clamp(16px,1.35vw,21px); }
+.col .lead-no{
+  font-family:var(--display); font-style:italic; font-weight:700;
+  color:var(--tint); font-size:clamp(18px,1.6vw,24px); display:block; margin-bottom:.15em;
+}
+
+/* Lista de herramientas dentro de columna (chips) */
+.tools{ display:flex; flex-wrap:wrap; gap:8px; margin-top:.5em; }
+.tools span{
+  font-size:clamp(14px,1.15vw,18px); font-weight:500;
+  padding:.3em .7em; background:var(--paper);
+  border:1.5px solid var(--tint); color:var(--ink);
+}
+
+/* --- Bloque de "lista de puntos grandes" (definición/objetivo) --- */
+.points{ display:flex; flex-direction:column; gap:clamp(12px,2vh,22px); margin-top:clamp(14px,2.4vh,30px); max-width:42ch; }
+.point{ display:flex; gap:16px; align-items:flex-start; }
+.point .b{ width:14px; height:14px; flex:0 0 14px; margin-top:.5em; background:var(--tint); }
+.point .txt strong{ font-weight:600; }
+.point .txt{ font-size:clamp(18px,1.55vw,25px); line-height:1.4; }
+
+/* --- Pasos numerados grandes (ejercicio) --- */
+.steps{ display:flex; flex-direction:column; gap:clamp(10px,1.8vh,20px); margin:clamp(14px,2.4vh,28px) 0; max-width:46ch; }
+.step{ display:flex; gap:18px; align-items:baseline; }
+.step .sn{
+  font-family:var(--display); font-weight:700; font-style:italic;
+  font-size:clamp(26px,2.6vw,42px); color:var(--tint); min-width:1.4ch;
+}
+.step .sd{ font-size:clamp(18px,1.55vw,25px); line-height:1.35; }
+
+/* --- Cierre / recursos --- */
+.close-list{ display:flex; flex-direction:column; gap:clamp(14px,2.4vh,28px); margin-top:auto; margin-bottom:auto; }
+.close-row{ display:flex; align-items:baseline; gap:18px; }
+.close-row .lbl{
+  font-family:var(--display); font-style:italic; font-weight:600;
+  color:var(--tint); font-size:clamp(20px,2vw,30px); min-width:5ch;
+}
+.close-row .val{ font-size:clamp(20px,1.9vw,30px); font-weight:500; }
+
+/* Spacer flexible para empujar la nota al fondo */
+.spacer{ flex:1 1 auto; }
+
+/* ===========================================================================
+   6. UI FIJA — contador + progreso
+   =========================================================================== */
+#ui{
+  position:fixed; z-index:50;
+  left:clamp(20px,3vw,42px); bottom:clamp(18px,2.6vh,34px);
+  display:flex; align-items:center; gap:18px;
+  font-family:var(--body);
+}
+#counter{
+  font-family:var(--display); font-weight:600; font-style:italic;
+  font-size:clamp(15px,1.2vw,19px); color:var(--ink);
+  letter-spacing:.02em;
+}
+#counter b{ color:var(--tint); font-style:normal; font-weight:700; }
+#dots{ display:flex; gap:9px; align-items:center; }
+.dot{
+  width:11px; height:11px; padding:0; border:none; cursor:pointer;
+  background:rgba(43,33,28,.22);
+  transition:transform .25s ease, background .25s ease;
+}
+.dot:hover{ transform:scale(1.35); background:var(--ink-45); }
+.dot.on{ background:var(--tint); transform:scale(1.25); }
+.dot:focus-visible{ outline:2px solid var(--ink); outline-offset:3px; }
+
+/* hint de navegación arriba-derecha (sutil) */
+#hint-tr{
+  position:fixed; z-index:50; right:clamp(18px,2.6vw,34px); top:clamp(16px,2.4vh,30px);
+  font-size:clamp(12px,1vw,15px); color:var(--ink-45); letter-spacing:.04em;
+}
+#hint-tr kbd{
+  font-family:var(--body); font-weight:600; background:rgba(43,33,28,.08);
+  padding:.12em .5em; border-radius:0; border:1px solid rgba(43,33,28,.18);
+}
+
+/* ===========================================================================
+   7. TRANSICIÓN — "color-block wipe" diagonal
+   =========================================================================== */
+/* Panel que barre la pantalla en diagonal. Se anima vía clases JS. */
+#wipe{
+  position:fixed; inset:0; z-index:60; pointer-events:none;
+  background:var(--terra);
+  /* Empieza fuera, a la izquierda, recortado en diagonal */
+  transform:translateX(-100%) skewX(-8deg);
+  transform-origin:top left;
+  will-change:transform;
+}
+/* Fase 1: cubre (entra de izq a der) */
+#wipe.cover{
+  transform:translateX(0) skewX(-8deg);
+  transition:transform var(--wipe-ms) cubic-bezier(.76,0,.24,1);
+}
+/* Fase 2: descubre (sale por la derecha) */
+#wipe.reveal{
+  transform:translateX(110%) skewX(-8deg);
+  transition:transform var(--wipe-ms) cubic-bezier(.76,0,.24,1);
+}
+
+/* La diapositiva entrante hace un micro-ascenso de apoyo */
+.slide.enter{ animation:slideIn 560ms cubic-bezier(.22,.61,.36,1) both; }
+@keyframes slideIn{
+  from{ opacity:0; transform:translateY(26px) scale(.992); }
+  to  { opacity:1; transform:translateY(0)    scale(1); }
+}
+
+/* ---- Reduced motion: sólo opacidad ---- */
+@media (prefers-reduced-motion: reduce){
+  #wipe{ display:none !important; }
+  .slide{ transition:opacity .28s linear; }
+  .slide.enter{ animation:none; }
+  .slide:not(.active){ opacity:0; }
+  .dot{ transition:none; }
+}
+
+/* ===========================================================================
+   8. RESPONSIVE seguro (la presentación es 16:9, pero degradamos en angosto)
+   =========================================================================== */
+@media (max-width:820px){
+  .cols.c3, .cols.c4{ grid-template-columns:1fr 1fr; }
+  .agenda-grid{ grid-template-columns:1fr; }
+  .cover .inner{ max-width:88%; }
+  .wall-r{ width:30%; }
+}
+@media (max-width:520px){
+  .cols.c3, .cols.c4{ grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Panel de barrido de color (transición) -->
+<div id="wipe" aria-hidden="true"></div>
+
+<!-- Hint superior derecho -->
+<div id="hint-tr">Usa <kbd>←</kbd> <kbd>→</kbd> o <kbd>espacio</kbd></div>
+
+<!-- ====================== ESCENARIO DE DIAPOSITIVAS ====================== -->
+<main id="stage" aria-label="Presentación: Inteligencia Artificial para la Investigación">
+
+  <!-- ===================================================================
+       SLIDE 1 — PORTADA  (tinta: terracota)
+       =================================================================== -->
+  <section class="slide cover active" data-tint="terra" aria-label="Portada">
+    <div class="band"></div>
+    <div class="band b2"></div>
+    <div class="band b3"></div>
+    <div class="inner">
+      <p class="eyebrow" style="color:var(--terra)">Taller · Universidad</p>
+      <h1 style="margin:.18em 0 .12em">Inteligencia Artificial<br>para la Investigación</h1>
+      <p class="lede" style="max-width:30ch">Herramientas y flujos de trabajo
+        (<span class="tech">workflows</span>) para estudiantes e investigadores.</p>
+    </div>
+    <div class="foot">
+      <span class="by">Ponente: [Nombre] · [Fecha]</span>
+      <span class="hint">Pista: usa ← → o la barra espaciadora para avanzar.</span>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SLIDE 2 — AGENDA DEL DÍA  (tinta: cobalto)
+       =================================================================== -->
+  <section class="slide" data-tint="cobalt" aria-label="Agenda del día">
+    <div class="ghost-no" style="right:-2vw; bottom:-6vh">02</div>
+    <div class="wall-b" style="height:14%"></div>
+    <div class="content">
+      <div class="kicker"><span class="eyebrow">Agenda</span><span class="sec-no">del día</span></div>
+      <h2 style="margin-bottom:.18em">Lo que veremos hoy</h2>
+      <div class="agenda-grid">
+        <ol>
+          <li class="ag-item"><span class="n">1</span><span class="t">¿Por qué IA en la investigación?</span></li>
+          <li class="ag-item"><span class="n">2</span><span class="t">Panorama de herramientas</span></li>
+          <li class="ag-item"><span class="n">3</span><span class="t">Búsqueda y revisión de literatura</span></li>
+          <li class="ag-item"><span class="n">4</span><span class="t">Lectura y síntesis de fuentes</span></li>
+          <li class="ag-item"><span class="n">5</span><span class="t">Escritura académica asistida</span></li>
+        </ol>
+        <ol>
+          <li class="ag-item"><span class="n">6</span><span class="t">Análisis de datos y código</span></li>
+          <li class="ag-item"><span class="n">7</span><span class="t">Prompting efectivo</span></li>
+          <li class="ag-item"><span class="n">8</span><span class="t">Ética e integridad académica</span></li>
+          <li class="ag-item"><span class="n">9</span><span class="t">Ejercicio práctico</span></li>
+          <li class="ag-item"><span class="n">10</span><span class="t">Recursos y cierre</span></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SLIDE 3 — ¿POR QUÉ IA EN LA INVESTIGACIÓN?  (tinta: terracota)
+       =================================================================== -->
+  <section class="slide" data-tint="terra" aria-label="¿Por qué IA en la investigación?">
+    <div class="wall-r"></div>
+    <div class="content" style="padding-right:40%">
+      <div class="kicker"><span class="sec-no">01</span><span class="eyebrow">¿Por qué IA en la investigación?</span></div>
+      <p class="big-quote">La <em>IA generativa</em> (<span class="tech">LLMs</span>) no reemplaza
+        el criterio del investigador: <em>amplifica</em> su productividad.</p>
+      <div class="cols c3" style="margin-top:clamp(22px,4vh,52px); margin-bottom:0">
+        <div class="col"><span class="lead-no">a.</span><h3 style="font-size:clamp(19px,1.9vw,28px)">Acelera tareas repetitivas</h3></div>
+        <div class="col"><span class="lead-no">b.</span><h3 style="font-size:clamp(19px,1.9vw,28px)">Explora la literatura más rápido</h3></div>
+        <div class="col"><span class="lead-no">c.</span><h3 style="font-size:clamp(19px,1.9vw,28px)">Itera ideas y borradores (<span class="tech">drafts</span>)</h3></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="note"><strong>Siempre con verificación humana.</strong></div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SLIDE 4 — PANORAMA DE HERRAMIENTAS  (tinta: ocre)
+       =================================================================== -->
+  <section class="slide" data-tint="ocre" aria-label="Panorama de herramientas">
+    <div class="wall-b" style="height:12%"></div>
+    <div class="content">
+      <div class="kicker"><span class="sec-no">02</span><span class="eyebrow">Panorama de herramientas</span></div>
+      <h2 style="margin-bottom:.05em">Cuatro categorías</h2>
+      <div class="cols c4">
+        <div class="col">
+          <h3>Búsqueda &amp; literatura</h3>
+          <div class="tools"><span>Elicit</span><span>Consensus</span><span>Semantic Scholar</span><span>Perplexity</span></div>
+        </div>
+        <div class="col">
+          <h3>Lectura &amp; síntesis</h3>
+          <div class="tools"><span>NotebookLM</span><span>ChatPDF</span><span>SciSpace</span></div>
+        </div>
+        <div class="col">
+          <h3>Escritura &amp; edición</h3>
+          <div class="tools"><span>ChatGPT</span><span>Claude</span><span>Paperpal</span></div>
+        </div>
+        <div class="col">
+          <h3>Datos &amp; código</h3>
+          <div class="tools"><span>Claude</span><span>ChatGPT (Code Interpreter)</span><span>Julius AI</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SLIDE 5 — BÚSQUEDA Y REVISIÓN DE LITERATURA  (tinta: cobalto)
+       =================================================================== -->
+  <section class="slide" data-tint="cobalt" aria-label="Búsqueda y revisión de literatura">
+    <div class="wall-r thin"></div>
+    <div class="content" style="padding-right:24%">
+      <div class="kicker"><span class="sec-no">03</span><span class="eyebrow">Búsqueda y revisión de literatura</span></div>
+      <h2 style="margin-bottom:.1em">Encontrar y filtrar<br>literatura relevante</h2>
+      <div class="points">
+        <div class="point"><span class="b"></span><span class="txt"><strong>Elicit</strong> — formula tu pregunta de investigación y extrae los <span class="tech">findings</span> de los <span class="tech">papers</span>.</span></div>
+        <div class="point"><span class="b"></span><span class="txt"><strong>Consensus</strong> — respuestas basadas en evidencia científica.</span></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="note"><strong>Tip:</strong>&nbsp;verifica siempre la fuente primaria (<span class="tech">primary source</span>).</div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SLIDE 6 — LECTURA Y SÍNTESIS DE FUENTES  (tinta: rosa mexicano)
+       =================================================================== -->
+  <section class="slide" data-tint="rosa" aria-label="Lectura y síntesis de fuentes">
+    <div class="wall-r"></div>
+    <div class="notch" style="right:0; top:0; width:38%; height:16%; background:var(--ocre); opacity:1"></div>
+    <div class="content" style="padding-right:40%">
+      <div class="kicker"><span class="sec-no">04</span><span class="eyebrow">Lectura y síntesis de fuentes</span></div>
+      <div class="points" style="margin-top:clamp(10px,2vh,24px)">
+        <div class="point"><span class="b"></span><span class="txt"><strong>NotebookLM</strong> — sube tus PDFs y pregunta con citas a tus propios documentos.</span></div>
+        <div class="point"><span class="b"></span><span class="txt">Genera resúmenes, líneas de tiempo y mapas conceptuales.</span></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="note warn"><strong>Advertencia:</strong>&nbsp;cuidado con las alucinaciones (<span class="tech">hallucinations</span>): verifica cada cita.</div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SLIDE 7 — ESCRITURA ACADÉMICA ASISTIDA  (tinta: terracota)
+       =================================================================== -->
+  <section class="slide" data-tint="terra" aria-label="Escritura académica asistida">
+    <div class="wall-b"></div>
+    <div class="content">
+      <div class="kicker"><span class="sec-no">05</span><span class="eyebrow">Escritura académica asistida</span></div>
+      <h2 style="margin-bottom:.18em">Usos</h2>
+      <div class="cols c4" style="margin-top:0; margin-bottom:clamp(18px,3vh,40px)">
+        <div class="col"><h3 style="font-size:clamp(20px,2vw,30px)">Estructurar</h3></div>
+        <div class="col"><h3 style="font-size:clamp(20px,2vw,30px)">Parafrasear</h3></div>
+        <div class="col"><h3 style="font-size:clamp(20px,2vw,30px)">Mejorar la claridad</h3></div>
+        <div class="col"><h3 style="font-size:clamp(20px,2vw,30px)">Traducir</h3></div>
+      </div>
+      <p class="big-quote" style="font-size:clamp(26px,3.6vw,52px); max-width:22ch">El <em>borrador</em> puede ser de la IA; la <em>voz</em> y las <em>ideas</em> son tuyas.</p>
+      <div class="spacer"></div>
+      <div class="note"><strong>Integridad:</strong>&nbsp;declara el uso de IA según la política de tu institución.</div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SLIDE 8 — ANÁLISIS DE DATOS Y CÓDIGO  (tinta: cobalto)
+       =================================================================== -->
+  <section class="slide" data-tint="cobalt" aria-label="Análisis de datos y código">
+    <div class="wall-r"></div>
+    <div class="notch" style="right:9%; bottom:0; width:20%; height:34%; background:var(--ocre); opacity:1"></div>
+    <div class="content" style="padding-right:40%">
+      <div class="kicker"><span class="sec-no">06</span><span class="eyebrow">Análisis de datos y código</span></div>
+      <p class="big-quote" style="font-size:clamp(26px,3.7vw,54px); max-width:20ch">Pega tus datos o describe el problema; la IA <em>genera y explica</em> código
+        (<span class="tech">Python / R</span>).</p>
+      <div class="points" style="margin-top:clamp(16px,3vh,36px)">
+        <div class="point"><span class="b"></span><span class="txt">Limpieza de datos · estadística descriptiva · visualización.</span></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="note"><strong>Tip:</strong>&nbsp;pide que explique cada paso; no ejecutes código que no entiendas.</div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SLIDE 9 — PROMPTING EFECTIVO  (tinta: ocre)
+       =================================================================== -->
+  <section class="slide" data-tint="ocre" aria-label="Prompting efectivo">
+    <div class="wall-b" style="height:12%"></div>
+    <div class="content">
+      <div class="kicker"><span class="sec-no">07</span><span class="eyebrow">Prompting efectivo</span></div>
+      <h2 style="margin-bottom:.05em">Cuatro principios</h2>
+      <div class="cols c4">
+        <div class="col">
+          <span class="lead-no">01</span>
+          <h3>Rol</h3>
+          <p>Asigna un rol: <em>“Actúa como revisor de metodología”.</em></p>
+        </div>
+        <div class="col">
+          <span class="lead-no">02</span>
+          <h3>Contexto</h3>
+          <p>Da contexto, objetivo y audiencia.</p>
+        </div>
+        <div class="col">
+          <span class="lead-no">03</span>
+          <h3>Ejemplos</h3>
+          <p>Muestra ejemplos del formato deseado (<span class="tech">few-shot</span>).</p>
+        </div>
+        <div class="col">
+          <span class="lead-no">04</span>
+          <h3>Formato</h3>
+          <p>Especifica estructura y longitud de la salida (<span class="tech">output</span>).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SLIDE 10 — ÉTICA E INTEGRIDAD ACADÉMICA  (tinta: rosa mexicano)
+       =================================================================== -->
+  <section class="slide" data-tint="rosa" aria-label="Ética e integridad académica">
+    <div class="wall-r thin"></div>
+    <div class="content" style="padding-right:24%">
+      <div class="kicker"><span class="sec-no">08</span><span class="eyebrow">Ética e integridad académica</span></div>
+      <div class="cols c4" style="margin-top:clamp(14px,3vh,40px)">
+        <div class="col">
+          <h3>Verificación</h3>
+          <p>La IA puede inventar datos y referencias.</p>
+        </div>
+        <div class="col">
+          <h3>Transparencia</h3>
+          <p>Cita el uso de IA.</p>
+        </div>
+        <div class="col">
+          <h3>Privacidad</h3>
+          <p>No subas datos sensibles o confidenciales.</p>
+        </div>
+        <div class="col">
+          <h3>Sesgos (<span class="tech">bias</span>)</h3>
+          <p>Los modelos reflejan los sesgos de sus datos.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SLIDE 11 — EJERCICIO PRÁCTICO  (tinta: terracota)
+       =================================================================== -->
+  <section class="slide" data-tint="terra" aria-label="Ejercicio práctico">
+    <div class="wall-r"></div>
+    <div class="content" style="padding-right:40%">
+      <div class="kicker"><span class="sec-no">09</span><span class="eyebrow">Ejercicio práctico</span></div>
+      <h2 style="margin-bottom:.18em">Elige un <em>paper</em><br>de tu área</h2>
+      <div class="steps">
+        <div class="step"><span class="sn">1</span><span class="sd">Resume su contribución con una herramienta.</span></div>
+        <div class="step"><span class="sn">2</span><span class="sd">Formula 3 preguntas críticas.</span></div>
+        <div class="step"><span class="sn">3</span><span class="sd">Verifica una afirmación contra la fuente.</span></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="note"><span class="tag">Meta</span>&nbsp;&nbsp;<strong>15 minutos · en parejas</strong></div>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       SLIDE 12 — RECURSOS Y CIERRE  (tinta: cobalto)
+       =================================================================== -->
+  <section class="slide" data-tint="cobalt" aria-label="Recursos y cierre">
+    <div class="band" style="position:absolute; top:0; bottom:0; right:0; width:30%; background:var(--cobalt); z-index:0"></div>
+    <div class="band" style="position:absolute; top:0; bottom:0; right:0; width:16%; background:var(--rosa); z-index:0"></div>
+    <div class="band" style="position:absolute; top:0; bottom:0; right:0; width:7%;  background:var(--ocre); z-index:0"></div>
+    <div class="content" style="padding-right:34%">
+      <div class="kicker"><span class="sec-no">10</span><span class="eyebrow">Recursos y cierre</span></div>
+      <h2 style="margin-bottom:.1em">Gracias</h2>
+      <div class="close-list">
+        <div class="close-row"><span class="lbl">Material</span><span class="val">Diapositivas y guía de <span class="tech">prompts</span>: [enlace]</span></div>
+        <div class="close-row"><span class="lbl">Preguntas</span><span class="val"><span class="tech">Q&amp;A</span></span></div>
+        <div class="close-row"><span class="lbl">Contacto</span><span class="val">[correo de contacto]</span></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ====================== UI FIJA: contador + progreso ====================== -->
+<nav id="ui" aria-label="Navegación de diapositivas">
+  <span id="counter"><b id="cur">01</b> / <span id="total">12</span></span>
+  <span id="dots" role="tablist" aria-label="Ir a diapositiva"></span>
+</nav>
+
+<script>
+/* ===========================================================================
+   CONTROLADOR DEL DECK — vanilla JS, sin librerías. Funciona vía file://
+   =========================================================================== */
+(function(){
+  "use strict";
+
+  var stage   = document.getElementById('stage');
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var wipe    = document.getElementById('wipe');
+  var curEl   = document.getElementById('cur');
+  var dotsEl  = document.getElementById('dots');
+  var hintTR  = document.getElementById('hint-tr');
+  var N       = slides.length;
+  var index   = 0;
+  var busy    = false;
+
+  /* Colores de tinta por nombre (para teñir el panel de barrido) */
+  var TINTS = { terra:'#C8553D', rosa:'#E14B7E', ocre:'#E9B949', cobalt:'#2E5EAA' };
+
+  /* ¿Reduced motion? */
+  var reduce = window.matchMedia &&
+               window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.getElementById('total').textContent = String(N).padStart(2,'0');
+
+  /* ---- Construir indicador de progreso (puntos clicables) ---- */
+  for (var i=0;i<N;i++){
+    (function(k){
+      var b = document.createElement('button');
+      b.className = 'dot';
+      b.setAttribute('role','tab');
+      b.setAttribute('aria-label','Ir a la diapositiva ' + (k+1));
+      b.addEventListener('click', function(){ go(k); });
+      dotsEl.appendChild(b);
+    })(i);
+  }
+  var dots = Array.prototype.slice.call(dotsEl.children);
+
+  function pad(n){ return String(n+1).padStart(2,'0'); }
+
+  function syncUI(){
+    curEl.textContent = pad(index);
+    for (var i=0;i<dots.length;i++){
+      dots[i].classList.toggle('on', i===index);
+      dots[i].setAttribute('aria-selected', i===index ? 'true':'false');
+    }
+  }
+
+  /* ---- Mostrar slide instantáneo (sin animación de barrido) ---- */
+  function show(i, animateEnter){
+    slides.forEach(function(s){ s.classList.remove('active','enter'); });
+    var s = slides[i];
+    s.classList.add('active');
+    if (animateEnter && !reduce) {
+      // reflow para reiniciar la animación
+      void s.offsetWidth;
+      s.classList.add('enter');
+    }
+    syncUI();
+  }
+
+  /* ---- Transición principal: color-block wipe ---- */
+  function go(target){
+    if (busy) return;
+    target = Math.max(0, Math.min(N-1, target));
+    if (target === index){ return; }
+
+    // Esconder el hint tras la primera navegación
+    if (hintTR){ hintTR.style.opacity = '0'; hintTR.style.transition='opacity .4s'; }
+
+    if (reduce){
+      // Fallback: simple cambio (CSS hace el fundido por opacidad)
+      index = target;
+      show(index, false);
+      return;
+    }
+
+    busy = true;
+
+    // El panel toma el color de la tinta DESTINO
+    var tintName = slides[target].getAttribute('data-tint') || 'terra';
+    wipe.style.background = TINTS[tintName] || TINTS.terra;
+
+    // Reset duro del panel a su posición inicial (izquierda, oculto)
+    wipe.classList.remove('cover','reveal');
+    wipe.style.transition = 'none';
+    wipe.style.transform = 'translateX(-100%) skewX(-8deg)';
+    void wipe.offsetWidth; // reflow
+
+    // FASE 1 — cubrir
+    wipe.style.transition = '';
+    wipe.classList.add('cover');
+
+    var midSwapped = false;
+    function swapAtMid(){
+      if (midSwapped) return;
+      midSwapped = true;
+      index = target;
+      show(index, true);   // intercambia bajo el panel + micro-entrada
+    }
+
+    function onCovered(e){
+      if (e && e.propertyName && e.propertyName !== 'transform') return;
+      wipe.removeEventListener('transitionend', onCovered);
+      // Intercambiar el contenido mientras está totalmente cubierto
+      swapAtMid();
+      // FASE 2 — descubrir
+      wipe.classList.remove('cover');
+      wipe.classList.add('reveal');
+
+      function onRevealed(ev){
+        if (ev && ev.propertyName && ev.propertyName !== 'transform') return;
+        wipe.removeEventListener('transitionend', onRevealed);
+        wipe.classList.remove('reveal');
+        // dejar el panel listo (oculto) para la próxima
+        wipe.style.transition = 'none';
+        wipe.style.transform = 'translateX(-100%) skewX(-8deg)';
+        void wipe.offsetWidth;
+        wipe.style.transition = '';
+        busy = false;
+      }
+      wipe.addEventListener('transitionend', onRevealed);
+      // Respaldo por si transitionend no dispara
+      setTimeout(function(){ onRevealed({propertyName:'transform'}); }, 700);
+    }
+    wipe.addEventListener('transitionend', onCovered);
+    // Respaldo de seguridad
+    setTimeout(function(){ if(!midSwapped) onCovered({propertyName:'transform'}); }, 700);
+  }
+
+  function next(){ go(index+1); }
+  function prev(){ go(index-1); }
+  function first(){ go(0); }
+  function last(){ go(N-1); }
+
+  /* ---- Pantalla completa (tecla F) ---- */
+  function toggleFullscreen(){
+    var el = document.documentElement;
+    if (!document.fullscreenElement){
+      (el.requestFullscreen || el.webkitRequestFullscreen ||
+       el.msRequestFullscreen || function(){}).call(el);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen ||
+       document.msExitFullscreen || function(){}).call(document);
+    }
+  }
+
+  /* ---- Teclado ---- */
+  document.addEventListener('keydown', function(e){
+    // Evitar interferir si hay foco en algo editable (no aplica aquí, pero seguro)
+    switch(e.key){
+      case 'ArrowRight':
+      case 'PageDown':
+      case ' ':
+      case 'Spacebar':       // navegadores viejos
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft':
+      case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home':
+        e.preventDefault(); first(); break;
+      case 'End':
+        e.preventDefault(); last(); break;
+      case 'f':
+      case 'F':
+        e.preventDefault(); toggleFullscreen(); break;
+    }
+  });
+
+  /* ---- Clic: zona derecha ~60% avanza, zona izquierda retrocede ---- */
+  stage.addEventListener('click', function(e){
+    // No capturar clics sobre la UI (puntos) — están fuera de #stage de todos modos
+    var x = e.clientX / window.innerWidth;
+    if (x > 0.40){ next(); } else { prev(); }
+  });
+
+  /* ---- Táctil: swipe ---- */
+  var tx=0, ty=0, tStart=0;
+  stage.addEventListener('touchstart', function(e){
+    var t = e.changedTouches[0];
+    tx = t.clientX; ty = t.clientY; tStart = Date.now();
+  }, {passive:true});
+  stage.addEventListener('touchend', function(e){
+    var t = e.changedTouches[0];
+    var dx = t.clientX - tx, dy = t.clientY - ty, dt = Date.now()-tStart;
+    if (dt < 800 && Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)*1.4){
+      if (dx < 0) next(); else prev();
+    }
+  }, {passive:true});
+
+  /* ---- Estado inicial ---- */
+  show(0, false);
+  syncUI();
+})();
+</script>
+</body>
+</html>

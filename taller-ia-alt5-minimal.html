@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  TALLER · "Inteligencia Artificial para la Investigación"
+  Design direction: "Minimal de conferencia" — a polished modern tech/science
+  keynote. Quiet confidence, excellent typography, generous whitespace,
+  left/grid-aligned content (never everything-centered), ONE refined accent
+  (deep teal #0E7C7B). No purple, no uniform rounded cards, no Inter font.
+
+  Typeface: IBM Plex Sans (text) + IBM Plex Serif (emphasis / pull-quotes),
+  with robust system-font fallbacks.
+
+  CONTROLS
+    Next ........ Right Arrow · Space · PageDown · click right ~60% of screen
+    Previous .... Left Arrow · PageUp · click left ~40% of screen
+    First ....... Home
+    Last ........ End
+    Fullscreen .. F
+    Touch ....... swipe left / right
+    Jump ........ click any segment of the bottom progress bar
+
+  TRANSITION
+    Soft cross-fade + small vertical/scale move (translateY 12px + scale .99->1,
+    opacity 0->1), ~400ms ease-out. prefers-reduced-motion -> plain fade.
+
+  STRUCTURE
+    Each slide is a <section class="slide"> block, commented and easy to edit.
+    Works fully offline via file:// (double-click). Vanilla JS only.
+  ============================================================================
+-->
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inteligencia Artificial para la Investigación · Taller</title>
+
+<!-- Google Fonts (with system fallbacks declared in CSS) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+/* ===========================================================================
+   1. DESIGN TOKENS
+   =========================================================================== */
+:root{
+  --paper:      #FCFCFD;   /* near-white background          */
+  --ink:        #13161A;   /* near-black text                */
+  --grey:       #6B7280;   /* cool grey secondary            */
+  --grey-soft:  #9AA1AB;   /* lighter grey                   */
+  --line:       #E4E6EA;   /* hairline rule                  */
+  --line-soft:  #EEF0F3;   /* faint fill                     */
+  --accent:     #0E7C7B;   /* deep teal — the ONE accent     */
+  --accent-ink: #0A5B5A;   /* darker teal for text on paper  */
+  --accent-wash:#EAF4F4;   /* faint teal wash                */
+
+  --font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-serif:'IBM Plex Serif', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  --pad-x: clamp(48px, 7.5vw, 132px);  /* generous left/right margin */
+  --pad-y: clamp(40px, 6.5vh, 84px);
+  --maxw: 1180px;
+
+  --dur: 420ms;
+  --ease: cubic-bezier(.22,.61,.36,1);
+}
+
+/* ===========================================================================
+   2. RESET / BASE
+   =========================================================================== */
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ height:100%; }
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-sans);
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+  overflow:hidden;
+  font-size:16px;
+}
+
+/* ===========================================================================
+   3. DECK / SLIDE FRAMEWORK
+   =========================================================================== */
+.deck{ position:fixed; inset:0; }
+
+.slide{
+  position:absolute; inset:0;
+  display:none;                 /* exactly one slide visible at a time */
+  padding:var(--pad-y) var(--pad-x);
+  padding-bottom:calc(var(--pad-y) + 18px);
+  opacity:0;
+}
+.slide.active{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+
+/* Soft cross-fade + slight rise & scale */
+.slide.enter{
+  animation:slideIn var(--dur) var(--ease) forwards;
+}
+@keyframes slideIn{
+  from{ opacity:0; transform:translateY(12px) scale(.99); }
+  to  { opacity:1; transform:translateY(0)    scale(1);   }
+}
+
+/* The inner wrapper keeps a comfortable measure and left alignment */
+.wrap{ width:100%; max-width:var(--maxw); margin:0; }
+
+/* ===========================================================================
+   4. SHARED TYPOGRAPHY HELPERS
+   =========================================================================== */
+.eyebrow{
+  font-size:clamp(13px,1.1vw,15px);
+  font-weight:600;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--accent-ink);
+  display:inline-flex; align-items:center; gap:.7em;
+}
+.eyebrow::before{   /* short teal tick before the eyebrow */
+  content:""; width:26px; height:2px; background:var(--accent); display:inline-block;
+}
+
+h1.title{
+  font-family:var(--font-sans);
+  font-weight:600;
+  font-size:clamp(40px,6.4vw,82px);
+  line-height:1.02;
+  letter-spacing:-.022em;
+  margin-top:.42em;
+  max-width:16ch;
+}
+h2.heading{
+  font-weight:600;
+  font-size:clamp(30px,4.2vw,54px);
+  line-height:1.06;
+  letter-spacing:-.018em;
+  margin-top:.34em;
+  max-width:20ch;
+}
+.lead{
+  color:var(--grey);
+  font-size:clamp(20px,1.9vw,27px);
+  line-height:1.45;
+  font-weight:400;
+  max-width:46ch;
+}
+.kicker{       /* small all-caps section label used inside body */
+  font-size:clamp(13px,1vw,15px);
+  font-weight:600;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--grey);
+}
+.mono{ font-family:var(--font-mono); }
+.accent{ color:var(--accent-ink); }
+.serif{ font-family:var(--font-serif); }
+
+/* Pull-quote (serif) used on the "why" slide etc. */
+.pull{
+  font-family:var(--font-serif);
+  font-weight:400;
+  font-size:clamp(30px,4.4vw,56px);
+  line-height:1.16;
+  letter-spacing:-.01em;
+  max-width:21ch;
+  position:relative;
+  padding-left:clamp(20px,2vw,34px);
+}
+.pull::before{    /* slim teal vertical rule */
+  content:""; position:absolute; left:0; top:.12em; bottom:.12em;
+  width:3px; background:var(--accent); border-radius:2px;
+}
+.pull em{ font-style:italic; color:var(--accent-ink); }
+
+/* a small note / caveat line with a teal dot */
+.note{
+  display:inline-flex; align-items:baseline; gap:.7em;
+  color:var(--grey); font-size:clamp(17px,1.5vw,21px); line-height:1.4;
+}
+.note::before{
+  content:""; width:9px; height:9px; flex:0 0 auto; border-radius:50%;
+  background:var(--accent); transform:translateY(2px);
+}
+.note.warn::before{ background:#B5532B; }   /* warm tone for warnings */
+.note.warn{ color:#8A4022; }
+
+/* ===========================================================================
+   5. PERSISTENT UI: footer meta · counter · progress bar
+   =========================================================================== */
+.meta{
+  position:fixed; left:var(--pad-x); bottom:calc(var(--pad-y) - 18px);
+  font-size:13px; letter-spacing:.05em; color:var(--grey-soft);
+  display:flex; gap:.6em; align-items:center; z-index:30;
+  pointer-events:none;
+}
+.meta .dot{ width:3px; height:3px; background:var(--grey-soft); border-radius:50%; }
+
+.counter{
+  position:fixed; right:var(--pad-x); bottom:calc(var(--pad-y) - 18px);
+  font-family:var(--font-mono); font-size:13px; letter-spacing:.06em;
+  color:var(--grey); z-index:30; pointer-events:none;
+}
+.counter b{ color:var(--ink); font-weight:500; }
+
+/* Thin clickable progress bar pinned to the very bottom */
+.progress{
+  position:fixed; left:0; right:0; bottom:0; height:6px;
+  display:flex; gap:2px; padding:0 0; z-index:40;
+  background:transparent;
+}
+.progress .seg{
+  flex:1 1 0; height:100%; cursor:pointer; position:relative;
+  background:transparent;
+}
+.progress .seg::after{       /* the visible track line */
+  content:""; position:absolute; left:0; right:0; bottom:0; height:2px;
+  background:var(--line); transition:height .2s var(--ease), background .3s var(--ease);
+}
+.progress .seg:hover::after{ height:6px; background:var(--grey-soft); }
+.progress .seg.done::after{ background:var(--accent); }
+.progress .seg.current::after{ height:6px; background:var(--accent); }
+
+/* tiny brand mark, top-left, persistent */
+.brand{
+  position:fixed; top:var(--pad-y); right:var(--pad-x);
+  font-size:12.5px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--grey-soft); z-index:30; pointer-events:none; font-weight:500;
+}
+
+/* ===========================================================================
+   6. LAYOUT COMPONENTS
+   =========================================================================== */
+
+/* --- numbered agenda list, two columns --- */
+.agenda{
+  margin-top:clamp(22px,3vh,46px);
+  display:grid; grid-template-columns:1fr 1fr;
+  column-gap:clamp(40px,6vw,110px); row-gap:0;
+  max-width:1080px;
+}
+.agenda li{
+  list-style:none; display:flex; align-items:baseline; gap:1em;
+  padding:clamp(11px,1.5vh,16px) 0;
+  border-bottom:1px solid var(--line);
+  font-size:clamp(18px,1.65vw,23px); line-height:1.3;
+}
+.agenda li .n{
+  font-family:var(--font-mono); font-size:.82em; color:var(--accent-ink);
+  min-width:2.1em; font-weight:500;
+}
+
+/* --- 2x2 tool grid (panorama) — NOT rounded cards; clean ruled quadrants --- */
+.grid2x2{
+  margin-top:clamp(20px,3vh,40px);
+  display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr;
+  border-top:1px solid var(--line); border-left:1px solid var(--line);
+  max-width:1080px;
+}
+.quad{
+  border-right:1px solid var(--line); border-bottom:1px solid var(--line);
+  padding:clamp(20px,2.6vw,34px) clamp(22px,2.6vw,38px);
+  position:relative;
+}
+.quad .qhead{
+  display:flex; align-items:baseline; gap:.75em; margin-bottom:.7em;
+}
+.quad .qnum{
+  font-family:var(--font-mono); font-size:13px; color:var(--accent);
+  font-weight:500;
+}
+.quad h3{
+  font-size:clamp(19px,1.7vw,24px); font-weight:600; letter-spacing:-.01em;
+}
+.quad .tools{
+  display:flex; flex-wrap:wrap; gap:.5em .55em;
+}
+.quad .tool{
+  font-size:clamp(15px,1.3vw,18px); color:var(--ink);
+  padding:.26em .7em; background:var(--line-soft);
+  border:1px solid var(--line); line-height:1.2;
+}
+.quad .tool.key{          /* highlight a flagship tool */
+  background:var(--accent-wash); border-color:#CFE5E4; color:var(--accent-ink); font-weight:500;
+}
+
+/* --- a left rail + content split used on detail slides --- */
+.split{
+  display:grid; grid-template-columns:0.9fr 1.25fr;
+  gap:clamp(38px,5vw,92px); align-items:start;
+  margin-top:clamp(24px,3vh,44px);
+}
+.split .rail .kicker{ display:block; margin-bottom:.6em; }
+.split .rail .obj{
+  font-family:var(--font-serif); font-size:clamp(22px,2.1vw,30px);
+  line-height:1.25; color:var(--ink); letter-spacing:-.01em;
+}
+
+/* tool entries: name + one-line description, ruled */
+.entries{ display:flex; flex-direction:column; }
+.entry{
+  display:grid; grid-template-columns:auto 1fr; gap:0 1.1em;
+  padding:clamp(14px,1.9vh,20px) 0; border-bottom:1px solid var(--line);
+  align-items:baseline;
+}
+.entry:first-child{ border-top:1px solid var(--line); }
+.entry .name{
+  font-weight:600; font-size:clamp(19px,1.7vw,24px); letter-spacing:-.01em;
+  color:var(--ink);
+}
+.entry .desc{
+  color:var(--grey); font-size:clamp(17px,1.5vw,21px); line-height:1.38;
+}
+
+/* --- principle rows (prompting) — labeled rows with mono index --- */
+.rows{ margin-top:clamp(22px,3vh,42px); max-width:1020px; }
+.prow{
+  display:grid; grid-template-columns:auto 8.5em 1fr; gap:0 clamp(18px,2vw,34px);
+  align-items:baseline; padding:clamp(15px,2vh,22px) 0;
+  border-bottom:1px solid var(--line);
+}
+.prow:first-child{ border-top:1px solid var(--line); }
+.prow .idx{ font-family:var(--font-mono); color:var(--accent); font-size:15px; font-weight:500; }
+.prow .label{ font-weight:600; font-size:clamp(20px,1.8vw,26px); letter-spacing:-.01em; }
+.prow .body{ color:var(--grey); font-size:clamp(17px,1.55vw,22px); line-height:1.4; }
+.prow .body code{
+  font-family:var(--font-mono); font-size:.88em; background:var(--line-soft);
+  border:1px solid var(--line); padding:.1em .45em; color:var(--accent-ink);
+}
+
+/* --- three / four feature columns (used on "por qué" & ética) --- */
+.cols{
+  display:grid; gap:clamp(26px,3vw,56px);
+  margin-top:clamp(26px,3.4vh,52px);
+}
+.cols.three{ grid-template-columns:repeat(3,1fr); }
+.cols.two{ grid-template-columns:repeat(2,1fr); max-width:980px; }
+.col .ctitle{
+  font-weight:600; font-size:clamp(19px,1.75vw,25px); letter-spacing:-.01em;
+  padding-top:.5em; border-top:2px solid var(--accent);
+  display:inline-block;
+}
+.col .cbody{ color:var(--grey); font-size:clamp(17px,1.5vw,21px); line-height:1.45; margin-top:.5em; }
+.col .cnum{ font-family:var(--font-mono); font-size:13px; color:var(--accent); display:block; margin-bottom:.9em; }
+
+/* inline pill tags for "usos" lists */
+.tags{ display:flex; flex-wrap:wrap; gap:.6em; margin-top:clamp(18px,2.4vh,32px); }
+.tag{
+  font-size:clamp(17px,1.5vw,22px); padding:.4em 1em;
+  border:1px solid var(--line); background:#fff; color:var(--ink); letter-spacing:.01em;
+}
+.tag .x{ color:var(--accent); margin-right:.55em; font-family:var(--font-mono); }
+
+/* steps list (ejercicio) */
+.steps{ counter-reset:s; margin-top:clamp(20px,2.6vh,38px); max-width:780px; }
+.step{
+  display:flex; gap:1.1em; align-items:flex-start;
+  padding:clamp(13px,1.7vh,19px) 0; border-bottom:1px solid var(--line);
+  font-size:clamp(19px,1.7vw,24px); line-height:1.35;
+}
+.step:first-child{ border-top:1px solid var(--line); }
+.step .sn{
+  flex:0 0 auto; width:1.9em; height:1.9em; border:1.5px solid var(--accent);
+  color:var(--accent-ink); border-radius:50%; display:grid; place-items:center;
+  font-family:var(--font-mono); font-size:.7em; font-weight:500; transform:translateY(.1em);
+}
+
+/* closing / contact rows */
+.contact{ margin-top:clamp(28px,3.6vh,56px); max-width:760px; }
+.crow{
+  display:grid; grid-template-columns:11em 1fr; gap:1.4em; align-items:baseline;
+  padding:clamp(16px,2.2vh,24px) 0; border-bottom:1px solid var(--line);
+}
+.crow:first-child{ border-top:1px solid var(--line); }
+.crow .ck{ font-weight:600; font-size:clamp(18px,1.6vw,23px); letter-spacing:-.005em; }
+.crow .cv{ color:var(--grey); font-size:clamp(18px,1.6vw,23px); }
+.crow .cv a, .crow .cv .link{ color:var(--accent-ink); text-decoration:none; border-bottom:1px solid #BFE0DF; }
+
+/* hint line on the cover */
+.hint{
+  margin-top:clamp(34px,5vh,72px); color:var(--grey-soft);
+  font-size:clamp(14px,1.15vw,17px); letter-spacing:.01em;
+  display:inline-flex; align-items:center; gap:.6em;
+}
+.kbd{
+  font-family:var(--font-mono); font-size:.85em; border:1px solid var(--line);
+  border-bottom-width:2px; border-radius:4px; padding:.12em .5em; color:var(--grey);
+  background:#fff;
+}
+
+/* cover meta footer */
+.cover-foot{
+  margin-top:clamp(24px,3.4vh,44px); color:var(--grey);
+  font-size:clamp(16px,1.4vw,20px); letter-spacing:.005em;
+}
+
+/* big slide number watermark, subtle, top-left of section heading slides */
+.bignum{
+  font-family:var(--font-mono); font-size:clamp(14px,1.1vw,16px);
+  color:var(--accent); font-weight:500; letter-spacing:.04em;
+}
+
+/* ===========================================================================
+   7. RESPONSIVE TIGHTENING (smaller projector windows)
+   =========================================================================== */
+@media (max-width:900px){
+  .split{ grid-template-columns:1fr; }
+  .grid2x2{ grid-template-columns:1fr; grid-template-rows:none; }
+  .cols.three{ grid-template-columns:1fr 1fr; }
+  .agenda{ grid-template-columns:1fr; }
+}
+
+/* ===========================================================================
+   8. REDUCED MOTION — plain fade only
+   =========================================================================== */
+@media (prefers-reduced-motion: reduce){
+  .slide.enter{ animation:fadeOnly var(--dur) ease forwards; }
+  @keyframes fadeOnly{ from{opacity:0} to{opacity:1} }
+  .progress .seg::after{ transition:none; }
+}
+</style>
+</head>
+
+<body>
+<div class="deck" id="deck">
+
+  <!-- ====================================================================
+       SLIDE 1 · PORTADA
+       ==================================================================== -->
+  <section class="slide" data-name="Portada">
+    <div class="wrap">
+      <span class="eyebrow">Taller · Universidad</span>
+      <h1 class="title">Inteligencia Artificial para la Investigación</h1>
+      <p class="lead" style="margin-top:clamp(22px,3vh,38px);">
+        Herramientas y flujos de trabajo para estudiantes e investigadores.
+      </p>
+      <p class="cover-foot">Ponente: [Nombre] &nbsp;·&nbsp; [Fecha]</p>
+      <p class="hint">
+        Usa <span class="kbd">&larr;</span> <span class="kbd">&rarr;</span>
+        o la <span class="kbd">barra espaciadora</span> para avanzar
+      </p>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       SLIDE 2 · AGENDA DEL DÍA
+       ==================================================================== -->
+  <section class="slide" data-name="Agenda">
+    <div class="wrap">
+      <span class="eyebrow">Hoja de ruta</span>
+      <h2 class="heading">Agenda del día</h2>
+      <ol class="agenda">
+        <li><span class="n">01</span><span>¿Por qué IA en la investigación?</span></li>
+        <li><span class="n">02</span><span>Panorama de herramientas</span></li>
+        <li><span class="n">03</span><span>Búsqueda y revisión de literatura</span></li>
+        <li><span class="n">04</span><span>Lectura y síntesis de fuentes</span></li>
+        <li><span class="n">05</span><span>Escritura académica asistida</span></li>
+        <li><span class="n">06</span><span>Análisis de datos y código</span></li>
+        <li><span class="n">07</span><span>Prompting efectivo</span></li>
+        <li><span class="n">08</span><span>Ética e integridad académica</span></li>
+        <li><span class="n">09</span><span>Ejercicio práctico</span></li>
+        <li><span class="n">10</span><span>Recursos y cierre</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       SLIDE 3 · ¿POR QUÉ IA EN LA INVESTIGACIÓN?
+       ==================================================================== -->
+  <section class="slide" data-name="¿Por qué IA?">
+    <div class="wrap">
+      <span class="eyebrow">01 · Motivación</span>
+      <p class="pull" style="margin-top:clamp(22px,3vh,40px);">
+        La IA generativa <em>(LLMs)</em> no reemplaza el criterio del investigador:
+        <em>amplifica</em> su productividad.
+      </p>
+      <div class="cols three">
+        <div class="col">
+          <span class="cnum">01</span>
+          <span class="ctitle">Acelera tareas repetitivas</span>
+          <p class="cbody">Resúmenes, formato y trabajo mecánico en una fracción del tiempo.</p>
+        </div>
+        <div class="col">
+          <span class="cnum">02</span>
+          <span class="ctitle">Explora la literatura más rápido</span>
+          <p class="cbody">Localiza, filtra y compara fuentes con menos fricción.</p>
+        </div>
+        <div class="col">
+          <span class="cnum">03</span>
+          <span class="ctitle">Itera ideas y borradores <span class="mono" style="font-size:.8em">(drafts)</span></span>
+          <p class="cbody">Prueba enfoques y refina argumentos en ciclos cortos.</p>
+        </div>
+      </div>
+      <p class="note" style="margin-top:clamp(26px,3.4vh,46px);">Siempre con verificación humana.</p>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       SLIDE 4 · PANORAMA DE HERRAMIENTAS (2x2)
+       ==================================================================== -->
+  <section class="slide" data-name="Panorama de herramientas">
+    <div class="wrap">
+      <span class="eyebrow">02 · Mapa del terreno</span>
+      <h2 class="heading">Panorama de herramientas</h2>
+      <div class="grid2x2">
+        <div class="quad">
+          <div class="qhead"><span class="qnum">A</span><h3>Búsqueda &amp; literatura</h3></div>
+          <div class="tools">
+            <span class="tool key">Elicit</span><span class="tool">Consensus</span>
+            <span class="tool">Semantic Scholar</span><span class="tool">Perplexity</span>
+          </div>
+        </div>
+        <div class="quad">
+          <div class="qhead"><span class="qnum">B</span><h3>Lectura &amp; síntesis</h3></div>
+          <div class="tools">
+            <span class="tool key">NotebookLM</span><span class="tool">ChatPDF</span>
+            <span class="tool">SciSpace</span>
+          </div>
+        </div>
+        <div class="quad">
+          <div class="qhead"><span class="qnum">C</span><h3>Escritura &amp; edición</h3></div>
+          <div class="tools">
+            <span class="tool key">ChatGPT</span><span class="tool key">Claude</span>
+            <span class="tool">Paperpal</span>
+          </div>
+        </div>
+        <div class="quad">
+          <div class="qhead"><span class="qnum">D</span><h3>Datos &amp; código</h3></div>
+          <div class="tools">
+            <span class="tool key">Claude</span><span class="tool">ChatGPT (Code Interpreter)</span>
+            <span class="tool">Julius AI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       SLIDE 5 · BÚSQUEDA Y REVISIÓN DE LITERATURA
+       ==================================================================== -->
+  <section class="slide" data-name="Búsqueda y revisión">
+    <div class="wrap">
+      <span class="eyebrow">03 · Literatura</span>
+      <h2 class="heading">Búsqueda y revisión de literatura</h2>
+      <div class="split">
+        <div class="rail">
+          <span class="kicker">Objetivo</span>
+          <p class="obj">Encontrar y filtrar literatura relevante.</p>
+        </div>
+        <div class="entries">
+          <div class="entry">
+            <span class="name">Elicit</span>
+            <span class="desc">Formula tu pregunta de investigación y extrae los <span class="mono">findings</span> de los papers.</span>
+          </div>
+          <div class="entry">
+            <span class="name">Consensus</span>
+            <span class="desc">Respuestas basadas en evidencia científica.</span>
+          </div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:clamp(28px,3.6vh,50px);">
+        Tip: verifica siempre la fuente primaria <span class="mono" style="margin-left:.3em">(primary source)</span>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       SLIDE 6 · LECTURA Y SÍNTESIS DE FUENTES
+       ==================================================================== -->
+  <section class="slide" data-name="Lectura y síntesis">
+    <div class="wrap">
+      <span class="eyebrow">04 · Síntesis</span>
+      <h2 class="heading">Lectura y síntesis de fuentes</h2>
+      <div class="split">
+        <div class="rail">
+          <span class="kicker">Herramienta clave</span>
+          <p class="obj">NotebookLM — sube tus PDFs y pregunta con citas a tus propios documentos.</p>
+        </div>
+        <div class="entries">
+          <div class="entry">
+            <span class="name">Resúmenes</span>
+            <span class="desc">Condensa documentos extensos en sus ideas centrales.</span>
+          </div>
+          <div class="entry">
+            <span class="name">Líneas de tiempo</span>
+            <span class="desc">Ordena eventos y hallazgos cronológicamente.</span>
+          </div>
+          <div class="entry">
+            <span class="name">Mapas conceptuales</span>
+            <span class="desc">Relaciona temas y conceptos entre fuentes.</span>
+          </div>
+        </div>
+      </div>
+      <p class="note warn" style="margin-top:clamp(26px,3.4vh,46px);">
+        Advertencia: cuidado con las alucinaciones <span class="mono" style="margin-left:.3em">(hallucinations)</span> — verifica cada cita.
+      </p>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       SLIDE 7 · ESCRITURA ACADÉMICA ASISTIDA
+       ==================================================================== -->
+  <section class="slide" data-name="Escritura asistida">
+    <div class="wrap">
+      <span class="eyebrow">05 · Escritura</span>
+      <h2 class="heading">Escritura académica asistida</h2>
+      <span class="kicker" style="display:block; margin-top:clamp(24px,3vh,38px);">Usos</span>
+      <div class="tags">
+        <span class="tag"><span class="x">+</span>estructurar</span>
+        <span class="tag"><span class="x">+</span>parafrasear</span>
+        <span class="tag"><span class="x">+</span>mejorar la claridad</span>
+        <span class="tag"><span class="x">+</span>traducir</span>
+      </div>
+      <p class="pull" style="margin-top:clamp(30px,4vh,54px);">
+        El borrador puede ser de la IA; <em>la voz y las ideas son tuyas.</em>
+      </p>
+      <p class="note" style="margin-top:clamp(24px,3vh,40px);">
+        Integridad: declara el uso de IA según la política de tu institución.
+      </p>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       SLIDE 8 · ANÁLISIS DE DATOS Y CÓDIGO
+       ==================================================================== -->
+  <section class="slide" data-name="Datos y código">
+    <div class="wrap">
+      <span class="eyebrow">06 · Datos</span>
+      <h2 class="heading">Análisis de datos y código</h2>
+      <div class="split">
+        <div class="rail">
+          <span class="kicker">Flujo</span>
+          <p class="obj">Pega tus datos o describe el problema; la IA genera y explica código <span class="mono" style="font-size:.82em">(Python / R)</span>.</p>
+        </div>
+        <div class="entries">
+          <div class="entry">
+            <span class="name">Limpieza de datos</span>
+            <span class="desc">Detecta inconsistencias y prepara tus conjuntos.</span>
+          </div>
+          <div class="entry">
+            <span class="name">Estadística descriptiva</span>
+            <span class="desc">Resúmenes, distribuciones y medidas clave.</span>
+          </div>
+          <div class="entry">
+            <span class="name">Visualización</span>
+            <span class="desc">Gráficos para explorar y comunicar resultados.</span>
+          </div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:clamp(26px,3.4vh,46px);">
+        Tip: pide que explique cada paso; no ejecutes código que no entiendas.
+      </p>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       SLIDE 9 · PROMPTING EFECTIVO (4 principios)
+       ==================================================================== -->
+  <section class="slide" data-name="Prompting efectivo">
+    <div class="wrap">
+      <span class="eyebrow">07 · Técnica</span>
+      <h2 class="heading">Prompting efectivo</h2>
+      <div class="rows">
+        <div class="prow">
+          <span class="idx">01</span>
+          <span class="label">Rol</span>
+          <span class="body">Asigna un rol: <code>Actúa como revisor de metodología</code>.</span>
+        </div>
+        <div class="prow">
+          <span class="idx">02</span>
+          <span class="label">Contexto</span>
+          <span class="body">Da contexto, objetivo y audiencia.</span>
+        </div>
+        <div class="prow">
+          <span class="idx">03</span>
+          <span class="label">Ejemplos</span>
+          <span class="body">Muestra ejemplos del formato deseado <span class="mono" style="color:var(--accent-ink)">(few-shot)</span>.</span>
+        </div>
+        <div class="prow">
+          <span class="idx">04</span>
+          <span class="label">Formato</span>
+          <span class="body">Especifica estructura y longitud de la salida <span class="mono" style="color:var(--accent-ink)">(output)</span>.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       SLIDE 10 · ÉTICA E INTEGRIDAD ACADÉMICA (4 puntos)
+       ==================================================================== -->
+  <section class="slide" data-name="Ética e integridad">
+    <div class="wrap">
+      <span class="eyebrow">08 · Responsabilidad</span>
+      <h2 class="heading">Ética e integridad académica</h2>
+      <div class="cols two" style="margin-top:clamp(28px,3.4vh,52px);">
+        <div class="col">
+          <span class="ctitle">Verificación</span>
+          <p class="cbody">La IA puede inventar datos y referencias.</p>
+        </div>
+        <div class="col">
+          <span class="ctitle">Transparencia</span>
+          <p class="cbody">Cita el uso de IA.</p>
+        </div>
+        <div class="col">
+          <span class="ctitle">Privacidad</span>
+          <p class="cbody">No subas datos sensibles o confidenciales.</p>
+        </div>
+        <div class="col">
+          <span class="ctitle">Sesgos <span class="mono" style="font-size:.78em">(bias)</span></span>
+          <p class="cbody">Los modelos reflejan los sesgos de sus datos.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       SLIDE 11 · EJERCICIO PRÁCTICO
+       ==================================================================== -->
+  <section class="slide" data-name="Ejercicio práctico">
+    <div class="wrap">
+      <span class="eyebrow">09 · Manos a la obra</span>
+      <h2 class="heading">Ejercicio práctico</h2>
+      <div class="split" style="align-items:center;">
+        <div class="rail">
+          <span class="kicker">Instrucción</span>
+          <p class="obj">Elige un paper de tu área.</p>
+          <p class="note" style="margin-top:clamp(20px,2.6vh,34px);">Meta: 15 minutos · en parejas</p>
+        </div>
+        <div class="steps">
+          <div class="step"><span class="sn">1</span><span>Resume su contribución con una herramienta.</span></div>
+          <div class="step"><span class="sn">2</span><span>Formula 3 preguntas críticas.</span></div>
+          <div class="step"><span class="sn">3</span><span>Verifica una afirmación contra la fuente.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================================================================
+       SLIDE 12 · RECURSOS Y CIERRE
+       ==================================================================== -->
+  <section class="slide" data-name="Recursos y cierre">
+    <div class="wrap">
+      <span class="eyebrow">10 · Cierre</span>
+      <h2 class="heading">Recursos y cierre</h2>
+      <div class="contact">
+        <div class="crow">
+          <span class="ck">Material</span>
+          <span class="cv">Diapositivas y guía de prompts: <span class="link">[enlace]</span></span>
+        </div>
+        <div class="crow">
+          <span class="ck">Preguntas</span>
+          <span class="cv">Q&amp;A — espacio abierto para dudas.</span>
+        </div>
+        <div class="crow">
+          <span class="ck">Gracias</span>
+          <span class="cv"><span class="link">[correo de contacto]</span></span>
+        </div>
+      </div>
+      <p class="pull serif" style="margin-top:clamp(34px,4.4vh,60px); font-size:clamp(26px,3.4vw,44px);">
+        Gracias.
+      </p>
+    </div>
+  </section>
+
+</div><!-- /.deck -->
+
+<!-- ===================== PERSISTENT ON-SCREEN UI ===================== -->
+<div class="brand">IA · Investigación</div>
+<div class="meta" id="meta"><span id="metaName">Portada</span><span class="dot"></span><span id="metaNum">01</span></div>
+<div class="counter"><b id="cur">01</b> / <span id="tot">12</span></div>
+<div class="progress" id="progress" aria-label="Progreso de la presentación"></div>
+
+<script>
+/* ===========================================================================
+   PRESENTATION CONTROLLER  (vanilla JS, works via file://)
+   =========================================================================== */
+(function(){
+  "use strict";
+
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total   = slides.length;
+  var index   = 0;
+  var progress= document.getElementById('progress');
+  var elCur   = document.getElementById('cur');
+  var elTot   = document.getElementById('tot');
+  var elName  = document.getElementById('metaName');
+  var elNum   = document.getElementById('metaNum');
+
+  function pad(n){ return (n<10? '0':'') + n; }
+
+  /* --- build clickable progress segments --- */
+  for(var i=0;i<total;i++){
+    (function(i){
+      var seg = document.createElement('div');
+      seg.className = 'seg';
+      seg.title = slides[i].getAttribute('data-name') || ('Diapositiva ' + (i+1));
+      seg.addEventListener('click', function(){ go(i); });
+      progress.appendChild(seg);
+    })(i);
+  }
+  var segs = Array.prototype.slice.call(progress.children);
+  elTot.textContent = pad(total);
+
+  /* --- render a given slide index --- */
+  function render(){
+    for(var i=0;i<total;i++){
+      var s = slides[i];
+      var on = (i === index);
+      s.classList.toggle('active', on);
+      // retrigger entrance animation
+      s.classList.remove('enter');
+      if(on){
+        // force reflow so the animation restarts each navigation
+        void s.offsetWidth;
+        s.classList.add('enter');
+      }
+      // progress segment states
+      segs[i].classList.toggle('done', i < index);
+      segs[i].classList.toggle('current', i === index);
+    }
+    var name = slides[index].getAttribute('data-name') || '';
+    elCur.textContent  = pad(index+1);
+    elNum.textContent  = pad(index+1);
+    elName.textContent = name;
+    // keep <title> stable; could append section if desired
+  }
+
+  function go(n){
+    n = Math.max(0, Math.min(total-1, n));
+    if(n === index){ return; }
+    index = n;
+    render();
+  }
+  function next(){ go(index+1); }
+  function prev(){ go(index-1); }
+
+  /* --- keyboard navigation --- */
+  document.addEventListener('keydown', function(e){
+    switch(e.key){
+      case 'ArrowRight': case 'PageDown': case ' ': case 'Spacebar':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home':
+        e.preventDefault(); go(0); break;
+      case 'End':
+        e.preventDefault(); go(total-1); break;
+      case 'f': case 'F':
+        e.preventDefault(); toggleFullscreen(); break;
+      default: break;
+    }
+  });
+
+  /* --- click to navigate: right ~60% next, left ~40% previous --- */
+  document.getElementById('deck').addEventListener('click', function(e){
+    // ignore clicks on interactive UI (progress bar handles its own)
+    if(e.target.closest('.progress')) return;
+    var x = e.clientX / window.innerWidth;
+    if(x > 0.40){ next(); } else { prev(); }
+  });
+
+  /* --- fullscreen toggle (F) --- */
+  function toggleFullscreen(){
+    var el = document.documentElement;
+    if(!document.fullscreenElement){
+      if(el.requestFullscreen) el.requestFullscreen();
+      else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    }else{
+      if(document.exitFullscreen) document.exitFullscreen();
+      else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+  }
+
+  /* --- touch swipe --- */
+  var tx=0, ty=0, touching=false;
+  document.addEventListener('touchstart', function(e){
+    if(e.touches.length!==1) return;
+    touching=true; tx=e.touches[0].clientX; ty=e.touches[0].clientY;
+  }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    if(!touching) return; touching=false;
+    var dx = e.changedTouches[0].clientX - tx;
+    var dy = e.changedTouches[0].clientY - ty;
+    if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)){
+      if(dx < 0) next(); else prev();
+    }
+  }, {passive:true});
+
+  /* --- support deep-link via hash (#3) and keep it updated --- */
+  function fromHash(){
+    var h = parseInt((location.hash||'').replace('#',''),10);
+    if(!isNaN(h) && h>=1 && h<=total){ index = h-1; }
+  }
+  fromHash();
+  window.addEventListener('hashchange', function(){ fromHash(); render(); });
+
+  /* --- initial paint --- */
+  render();
+})();
+</script>
+</body>
+</html>

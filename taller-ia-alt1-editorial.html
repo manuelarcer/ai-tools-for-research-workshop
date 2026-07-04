@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  TALLER · "Inteligencia Artificial para la Investigación"
+  Diseño: "EDITORIAL ACADÉMICO" — inspirado en revistas científicas y tipografía
+  de libro fino. Fondo papel cálido, tinta casi negra, acento oxblood/burgundy.
+  Transición: "page turn" horizontal (~500ms, cubic-bezier refinado).
+
+  --------------------------------------------------------------------------
+  CONTROLES DE TECLADO / NAVEGACIÓN
+    →  /  Espacio  /  PageDown  /  clic en el ~60% derecho   → siguiente
+    ←  /  PageUp   /  clic en el ~40% izquierdo              → anterior
+    Home                                                     → primera
+    End                                                      → última
+    F                                                        → pantalla completa
+    Swipe (táctil) izquierda / derecha                       → siguiente / anterior
+    Clic en los puntos del indicador de progreso             → salta a esa slide
+  --------------------------------------------------------------------------
+  CÓMO EDITAR / DUPLICAR UNA SLIDE
+    Cada diapositiva es un bloque <section class="slide" data-slide="N"> ...
+    bien comentado. Para añadir una, duplica un bloque completo, ajusta el
+    número data-slide y el folio, y edita el contenido. El contador y los
+    puntos se generan solos a partir de las <section class="slide"> existentes.
+  ============================================================================
+-->
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inteligencia Artificial para la Investigación · Taller</title>
+
+<!-- Google Fonts: Spectral (serif editorial) + IBM Plex Sans (humanista).
+     Si no hay conexión, los fallbacks del sistema mantienen el estilo. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
+
+<style>
+  /* ===================== TOKENS / VARIABLES ===================== */
+  :root{
+    /* Paleta papel + tinta + acento oxblood */
+    --paper:        #F6F2E9;   /* fondo papel cálido */
+    --paper-bright: #FBF8F1;   /* papel más claro (paneles) */
+    --ink:          #171513;   /* tinta casi negra */
+    --ink-soft:     #4A443C;   /* tinta suave para texto secundario */
+    --ink-faint:    #8A8174;   /* tinta tenue para captions / folios fantasma */
+    --accent:       #6E2A2A;   /* oxblood / burgundy, uso restringido */
+    --accent-tint:  rgba(110,42,42,0.08);
+    --rule:         #D8CFBE;   /* hairline sobre papel */
+
+    /* Tipografía */
+    --serif: 'Spectral', 'Source Serif 4', 'Georgia', 'Times New Roman', serif;
+    --sans:  'IBM Plex Sans', 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+    /* Ritmo base / escala fluida (16:9, proyectable) */
+    --gutter: clamp(40px, 5.2vw, 96px);   /* margen exterior editorial */
+    --baseline: clamp(22px, 2.1vw, 30px); /* ritmo vertical base */
+    --transition: 520ms;                  /* duración del page-turn */
+    --ease: cubic-bezier(0.66, 0, 0.20, 1); /* curva refinada */
+  }
+
+  /* ===================== RESET LIGERO ===================== */
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    background:var(--ink);             /* letterbox oscuro alrededor del 16:9 */
+    color:var(--ink);
+    font-family:var(--sans);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  ::selection{ background:var(--accent); color:var(--paper-bright); }
+
+  /* ===================== ESCENARIO 16:9 ===================== */
+  /* La presentación vive en una caja 16:9 centrada; el fondo es tinta. */
+  #stage{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #deck{
+    position:relative;
+    width:min(100vw, calc(100vh * 16 / 9));
+    height:min(100vh, calc(100vw * 9 / 16));
+    background:var(--paper);
+    overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,0.45);
+    /* Textura sutil de papel: motas muy tenues, sin distraer */
+    background-image:
+      radial-gradient(rgba(23,21,19,0.018) 1px, transparent 1px),
+      radial-gradient(rgba(23,21,19,0.012) 1px, transparent 1px);
+    background-size:22px 22px, 13px 13px;
+    background-position:0 0, 7px 11px;
+  }
+
+  /* ===================== SLIDES + PAGE-TURN ===================== */
+  .slide{
+    position:absolute; inset:0;
+    padding:var(--gutter);
+    display:flex; flex-direction:column;
+    opacity:0;
+    transform:translate3d(100%,0,0);    /* fuera, a la derecha (por defecto) */
+    transition:transform var(--transition) var(--ease),
+               opacity var(--transition) var(--ease);
+    will-change:transform, opacity;
+    pointer-events:none;
+    font-size:clamp(22px, 1.55vw, 26px); /* >=22px para proyección */
+    line-height:1.5;
+    color:var(--ink-soft);
+  }
+  .slide.is-active{
+    opacity:1;
+    transform:translate3d(0,0,0);
+    pointer-events:auto;
+    z-index:2;
+  }
+  /* La que sale hacia la izquierda (avanzar) */
+  .slide.is-leaving-left{
+    opacity:0;
+    transform:translate3d(-32%,0,0);
+    z-index:1;
+  }
+  /* La que sale hacia la derecha (retroceder) */
+  .slide.is-leaving-right{
+    opacity:0;
+    transform:translate3d(100%,0,0);
+    z-index:1;
+  }
+  /* Estado de espera para la que entra desde la izquierda (al retroceder) */
+  .slide.from-left{
+    transform:translate3d(-32%,0,0);
+  }
+
+  /* Velo sutil tipo "doblez de página" que barre durante la transición */
+  .slide::after{
+    content:"";
+    position:absolute; top:0; bottom:0; right:-12%;
+    width:14%;
+    background:linear-gradient(90deg, rgba(23,21,19,0.10), rgba(23,21,19,0));
+    opacity:0;
+    transition:opacity var(--transition) var(--ease);
+    pointer-events:none;
+  }
+  .slide.is-leaving-left::after{ opacity:1; }
+
+  /* ===================== ELEMENTOS EDITORIALES COMUNES ===================== */
+
+  /* Eyebrow: etiqueta en versalitas, sans */
+  .eyebrow{
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:clamp(12px, 0.95vw, 15px);
+    letter-spacing:0.22em;
+    text-transform:uppercase;
+    color:var(--accent);
+    display:inline-flex; align-items:center; gap:0.7em;
+  }
+  .eyebrow::before{ /* tic de regla corta antes del eyebrow */
+    content:""; width:2.4em; height:2px; background:var(--accent);
+    display:inline-block;
+  }
+
+  /* Hairline rule horizontal */
+  .rule{ height:1px; background:var(--rule); border:0; width:100%; }
+  .rule--ink{ background:var(--ink); height:2px; }
+  .rule--accent{ background:var(--accent); height:2px; }
+
+  /* Encabezados serif */
+  h1.title{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:clamp(40px, 5.4vw, 86px);
+    line-height:1.02;
+    letter-spacing:-0.012em;
+    color:var(--ink);
+    max-width:18ch;
+  }
+  h2.head{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:clamp(32px, 3.8vw, 60px);
+    line-height:1.05;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+    max-width:20ch;
+  }
+
+  /* Folio grande de display en una esquina (número de diapositiva). */
+  .folio{
+    position:absolute;
+    font-family:var(--serif);
+    font-weight:300;
+    line-height:1;
+    color:var(--accent);
+    opacity:0.16;
+    font-size:clamp(150px, 24vw, 360px);
+    user-select:none; pointer-events:none;
+    letter-spacing:-0.04em;
+  }
+  .folio--br{ right:var(--gutter); bottom:calc(var(--gutter) - 0.16em); }
+  .folio--tr{ right:var(--gutter); top:calc(var(--gutter) - 0.18em); }
+
+  /* Kicker / running head de la slide (arriba a la derecha, pequeño) */
+  .runhead{
+    font-family:var(--sans);
+    font-size:clamp(11px, 0.9vw, 14px);
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+
+  /* Bloque de cita / pull-quote serif grande */
+  .pullquote{
+    font-family:var(--serif);
+    font-weight:500;
+    font-size:clamp(30px, 3.5vw, 58px);
+    line-height:1.12;
+    letter-spacing:-0.008em;
+    color:var(--ink);
+    max-width:20ch;
+  }
+  .pullquote .em{ color:var(--accent); font-style:italic; }
+
+  /* Caption / nota a pie */
+  .caption{
+    font-family:var(--sans);
+    font-size:clamp(15px, 1.15vw, 19px);
+    color:var(--ink-soft);
+  }
+  .note{
+    font-family:var(--sans);
+    font-style:normal;
+    color:var(--accent);
+    font-weight:500;
+  }
+
+  /* Cabecera estándar de slide de contenido: eyebrow + running head */
+  .slide-top{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:24px;
+  }
+
+  /* Layout en dos columnas asimétricas (texto / lista) */
+  .cols{
+    display:grid;
+    grid-template-columns:1.05fr 1fr;
+    gap:clamp(36px, 4vw, 80px);
+    flex:1;
+    align-items:start;
+  }
+  .cols--narrowleft{ grid-template-columns:0.78fr 1fr; }
+
+  /* Lista numerada editorial (folios colgantes) para la agenda */
+  ol.editorial{
+    list-style:none;
+    counter-reset:ed;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    column-gap:clamp(40px, 5vw, 96px);
+    row-gap:0;
+  }
+  ol.editorial li{
+    counter-increment:ed;
+    display:grid;
+    grid-template-columns:2.6em 1fr;
+    align-items:baseline;
+    padding:0.62em 0;
+    border-bottom:1px solid var(--rule);
+    font-family:var(--serif);
+    font-size:clamp(19px, 1.7vw, 27px);
+    color:var(--ink);
+    line-height:1.18;
+  }
+  ol.editorial li::before{
+    content:counter(ed, decimal-leading-zero);
+    font-family:var(--sans);
+    font-weight:600;
+    font-size:0.62em;
+    color:var(--accent);
+    letter-spacing:0.02em;
+  }
+
+  /* Lista de "puntos" sin viñeta circular: regla + texto */
+  ul.dashes{ list-style:none; display:flex; flex-direction:column; gap:0.85em; }
+  ul.dashes li{
+    display:grid; grid-template-columns:auto 1fr; gap:0.9em; align-items:start;
+    font-family:var(--serif);
+    font-size:clamp(20px, 1.85vw, 30px);
+    line-height:1.22;
+    color:var(--ink);
+  }
+  ul.dashes li::before{
+    content:""; width:1.5em; height:2px; background:var(--accent);
+    margin-top:0.62em;
+  }
+  ul.dashes li b{ font-weight:600; }
+
+  /* Rejilla de cuatro categorías (panorama de herramientas) */
+  .quad{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:1fr 1fr;
+    gap:0;
+    flex:1;
+    border-top:2px solid var(--ink);
+    border-left:1px solid var(--rule);
+  }
+  .quad .cell{
+    border-right:1px solid var(--rule);
+    border-bottom:1px solid var(--rule);
+    padding:clamp(18px, 2.2vw, 34px) clamp(20px, 2.4vw, 38px);
+    display:flex; flex-direction:column; gap:0.5em;
+  }
+  .quad .cell .k{
+    font-family:var(--sans);
+    font-weight:600;
+    letter-spacing:0.14em; text-transform:uppercase;
+    font-size:clamp(12px, 1vw, 15px);
+    color:var(--accent);
+    display:flex; align-items:baseline; gap:0.6em;
+  }
+  .quad .cell .k .idx{ color:var(--ink-faint); font-variant-numeric:tabular-nums; }
+  .quad .cell .tools{
+    font-family:var(--serif);
+    font-size:clamp(20px, 1.95vw, 32px);
+    line-height:1.16;
+    color:var(--ink);
+    font-weight:500;
+  }
+  .quad .cell .tools .sep{ color:var(--ink-faint); font-weight:300; }
+
+  /* Bloque numerado horizontal (4 principios / 4 ítems de ética) */
+  .principles{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:0;
+    flex:1;
+    align-items:stretch;
+  }
+  .principles .p{
+    padding:clamp(14px,1.8vw,26px) clamp(18px,1.8vw,30px) 0 0;
+    border-top:2px solid var(--ink);
+    margin-right:clamp(18px,1.8vw,30px);
+    display:flex; flex-direction:column; gap:0.45em;
+  }
+  .principles .p:last-child{ margin-right:0; }
+  .principles .p .pn{
+    font-family:var(--serif); font-weight:300;
+    font-size:clamp(34px, 3.4vw, 56px);
+    line-height:0.9; color:var(--accent);
+  }
+  .principles .p .pt{
+    font-family:var(--sans); font-weight:600;
+    font-size:clamp(17px, 1.35vw, 22px);
+    letter-spacing:0.01em; color:var(--ink);
+  }
+  .principles .p .pd{
+    font-family:var(--sans);
+    font-size:clamp(15px, 1.15vw, 19px);
+    color:var(--ink-soft); line-height:1.35;
+  }
+  .principles .p .pd em{ color:var(--ink); font-style:italic; }
+
+  /* Panel de "objetivo" / destacado a la izquierda */
+  .objective{
+    background:var(--accent);
+    color:var(--paper-bright);
+    padding:clamp(22px,2.4vw,40px);
+    align-self:start;
+    max-width:100%;
+  }
+  .objective .lbl{
+    font-family:var(--sans); font-weight:600;
+    letter-spacing:0.2em; text-transform:uppercase;
+    font-size:clamp(11px,0.95vw,14px);
+    opacity:0.8;
+  }
+  .objective .txt{
+    font-family:var(--serif); font-weight:500;
+    font-size:clamp(24px,2.4vw,38px); line-height:1.12;
+    margin-top:0.35em;
+  }
+
+  /* Entradas tipo "ficha" para herramientas (slides 5,6,8) */
+  .entries{ display:flex; flex-direction:column; gap:1.05em; }
+  .entry{ display:grid; grid-template-columns:auto 1fr; gap:1em; align-items:start; }
+  .entry .tag{
+    font-family:var(--sans); font-weight:700;
+    font-size:clamp(14px,1.1vw,18px);
+    letter-spacing:0.04em;
+    color:var(--paper-bright);
+    background:var(--ink);
+    padding:0.28em 0.7em; white-space:nowrap;
+    align-self:start; margin-top:0.15em;
+  }
+  .entry .tag--accent{ background:var(--accent); }
+  .entry .body{
+    font-family:var(--serif);
+    font-size:clamp(20px,1.8vw,30px); line-height:1.24; color:var(--ink);
+  }
+
+  /* Pie de portada / créditos */
+  .credit{
+    font-family:var(--sans);
+    font-size:clamp(16px,1.25vw,21px);
+    color:var(--ink-soft);
+  }
+  .credit b{ color:var(--ink); font-weight:600; }
+  .hint{
+    font-family:var(--sans);
+    font-size:clamp(13px,1vw,16px);
+    color:var(--ink-faint);
+    letter-spacing:0.04em;
+  }
+  .hint kbd{
+    font-family:var(--sans); font-weight:600;
+    border:1px solid var(--rule); border-bottom-width:2px;
+    border-radius:3px; padding:0.05em 0.45em; color:var(--ink-soft);
+    background:var(--paper-bright);
+  }
+
+  /* Utilidades de espaciado vertical con ritmo base */
+  .mt-half{ margin-top:calc(var(--baseline) * 0.5); }
+  .mt-1{ margin-top:var(--baseline); }
+  .mt-2{ margin-top:calc(var(--baseline) * 1.6); }
+  .mt-auto{ margin-top:auto; }
+  .stack{ display:flex; flex-direction:column; }
+  .grow{ flex:1; }
+
+  /* ===================== UI FIJA (contador + progreso) ===================== */
+  /* Vive fuera del #deck para que no se mueva con el page-turn. */
+  #ui{
+    position:fixed; left:0; right:0; bottom:0;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px clamp(18px, 3vw, 40px);
+    z-index:50;
+    pointer-events:none; /* sólo los hijos interactivos reciben eventos */
+    font-family:var(--sans);
+    color:var(--paper);
+    mix-blend-mode:difference; /* contraste contra papel o tinta */
+  }
+  #counter{
+    font-variant-numeric:tabular-nums;
+    font-weight:600; letter-spacing:0.14em; font-size:14px;
+  }
+  #counter .sep{ opacity:0.5; margin:0 0.3em; }
+  #counter .total{ opacity:0.6; }
+
+  #dots{ display:flex; gap:9px; pointer-events:auto; }
+  #dots button{
+    appearance:none; border:0; background:transparent; cursor:pointer;
+    width:14px; height:14px; padding:0; display:grid; place-items:center;
+  }
+  #dots button .bead{
+    width:8px; height:8px; border-radius:50%;
+    background:currentColor; opacity:0.34;
+    transition:opacity 220ms ease, transform 220ms ease;
+  }
+  #dots button:hover .bead{ opacity:0.7; transform:scale(1.15); }
+  #dots button[aria-current="true"] .bead{
+    opacity:1; transform:scale(1.35);
+  }
+
+  /* Barra de progreso fina arriba del todo */
+  #progressbar{
+    position:fixed; top:0; left:0; height:3px; z-index:51;
+    background:var(--accent);
+    width:0%;
+    transition:width var(--transition) var(--ease);
+  }
+
+  /* Zonas de clic para navegación (izq/der). Sin estorbar la UI. */
+  #navzones{ position:fixed; inset:0; z-index:10; }
+  #navzones .zone{ position:absolute; top:0; bottom:64px; cursor:pointer; }
+  #navzones .prev{ left:0; width:40%; }
+  #navzones .next{ right:0; width:60%; }
+
+  /* ===================== REDUCED MOTION ===================== */
+  @media (prefers-reduced-motion: reduce){
+    .slide{
+      transition:opacity 180ms linear;
+      transform:none !important;
+    }
+    .slide.is-leaving-left,
+    .slide.is-leaving-right,
+    .slide.from-left{ transform:none !important; opacity:0; }
+    .slide::after{ display:none; }
+    #progressbar{ transition:none; }
+  }
+
+  /* ===================== AJUSTES PARA PANTALLAS MUY ANGOSTAS ===================== */
+  @media (max-aspect-ratio:11/10){
+    .cols, .cols--narrowleft{ grid-template-columns:1fr; gap:24px; }
+    ol.editorial{ grid-template-columns:1fr; }
+    .principles{ grid-template-columns:1fr 1fr; }
+    .principles .p{ margin-bottom:18px; }
+  }
+</style>
+</head>
+
+<body>
+
+<!-- Barra de progreso superior -->
+<div id="progressbar" aria-hidden="true"></div>
+
+<!-- Escenario 16:9 -->
+<div id="stage">
+  <div id="deck">
+
+    <!-- ====================================================================
+         SLIDE 01 — PORTADA
+         ==================================================================== -->
+    <section class="slide" data-slide="1" data-runhead="Portada">
+      <div class="folio folio--br">01</div>
+
+      <div class="stack grow">
+        <div class="mt-1">
+          <span class="eyebrow">Taller · Universidad</span>
+        </div>
+
+        <hr class="rule rule--ink mt-1" />
+
+        <h1 class="title mt-2">Inteligencia Artificial<br/>para la Investigación</h1>
+
+        <p class="pullquote mt-2" style="font-size:clamp(20px,2vw,30px);font-weight:400;max-width:30ch;color:var(--ink-soft);">
+          Herramientas y flujos de trabajo para estudiantes e investigadores.
+        </p>
+
+        <div class="mt-auto stack" style="gap:0.9em;">
+          <hr class="rule" />
+          <p class="credit">
+            Ponente: <b>[Nombre]</b> · <b>[Fecha]</b>
+          </p>
+          <p class="hint">
+            Usa <kbd>←</kbd> <kbd>→</kbd> o la <kbd>barra espaciadora</kbd> para avanzar.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 02 — AGENDA DEL DÍA
+         ==================================================================== -->
+    <section class="slide" data-slide="2" data-runhead="Agenda">
+      <div class="folio folio--tr">02</div>
+
+      <div class="slide-top">
+        <span class="eyebrow">Agenda del día</span>
+        <span class="runhead" data-runhead-slot></span>
+      </div>
+      <hr class="rule rule--ink mt-half" />
+
+      <h2 class="head mt-1" style="font-size:clamp(26px,3vw,46px);">Diez paradas para el día de hoy</h2>
+
+      <ol class="editorial mt-1 grow" style="align-content:center;">
+        <li>¿Por qué IA en la investigación?</li>
+        <li>Panorama de herramientas</li>
+        <li>Búsqueda y revisión de literatura</li>
+        <li>Lectura y síntesis de fuentes</li>
+        <li>Escritura académica asistida</li>
+        <li>Análisis de datos y código</li>
+        <li>Prompting efectivo</li>
+        <li>Ética e integridad académica</li>
+        <li>Ejercicio práctico</li>
+        <li>Recursos y cierre</li>
+      </ol>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 03 — ¿POR QUÉ IA EN LA INVESTIGACIÓN?
+         ==================================================================== -->
+    <section class="slide" data-slide="3" data-runhead="¿Por qué IA?">
+      <div class="folio folio--br">03</div>
+
+      <div class="slide-top">
+        <span class="eyebrow">¿Por qué IA en la investigación?</span>
+        <span class="runhead" data-runhead-slot></span>
+      </div>
+      <hr class="rule rule--ink mt-half" />
+
+      <div class="cols mt-1" style="align-items:center;">
+        <!-- Columna A: pull-quote -->
+        <blockquote class="pullquote">
+          La IA generativa (LLMs) no reemplaza el criterio del investigador:
+          <span class="em">amplifica su productividad.</span>
+        </blockquote>
+
+        <!-- Columna B: tres puntos + nota -->
+        <div class="stack" style="gap:1.2em;">
+          <ul class="dashes">
+            <li>Acelera tareas repetitivas</li>
+            <li>Explora la literatura más rápido</li>
+            <li>Itera ideas y borradores <b>(drafts)</b></li>
+          </ul>
+          <hr class="rule" />
+          <p class="caption">
+            <span class="note">Nota.</span> Siempre con verificación humana.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 04 — PANORAMA DE HERRAMIENTAS (cuatro categorías)
+         ==================================================================== -->
+    <section class="slide" data-slide="4" data-runhead="Panorama">
+      <div class="slide-top">
+        <span class="eyebrow">Panorama de herramientas</span>
+        <span class="runhead" data-runhead-slot></span>
+      </div>
+      <h2 class="head mt-half" style="font-size:clamp(24px,2.6vw,40px);">Cuatro categorías para orientarse</h2>
+
+      <!-- Rejilla 2×2 con líneas tipo tabla editorial -->
+      <div class="quad mt-1">
+        <div class="cell">
+          <span class="k"><span class="idx">I</span> Búsqueda &amp; literatura</span>
+          <span class="tools">Elicit <span class="sep">·</span> Consensus <span class="sep">·</span> Semantic Scholar <span class="sep">·</span> Perplexity</span>
+        </div>
+        <div class="cell">
+          <span class="k"><span class="idx">II</span> Lectura &amp; síntesis</span>
+          <span class="tools">NotebookLM <span class="sep">·</span> ChatPDF <span class="sep">·</span> SciSpace</span>
+        </div>
+        <div class="cell">
+          <span class="k"><span class="idx">III</span> Escritura &amp; edición</span>
+          <span class="tools">ChatGPT <span class="sep">·</span> Claude <span class="sep">·</span> Paperpal</span>
+        </div>
+        <div class="cell">
+          <span class="k"><span class="idx">IV</span> Datos &amp; código</span>
+          <span class="tools">Claude <span class="sep">·</span> ChatGPT (Code Interpreter) <span class="sep">·</span> Julius AI</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 05 — BÚSQUEDA Y REVISIÓN DE LITERATURA
+         ==================================================================== -->
+    <section class="slide" data-slide="5" data-runhead="Literatura">
+      <div class="folio folio--br">05</div>
+
+      <div class="slide-top">
+        <span class="eyebrow">Búsqueda y revisión de literatura</span>
+        <span class="runhead" data-runhead-slot></span>
+      </div>
+      <hr class="rule rule--ink mt-half" />
+
+      <div class="cols cols--narrowleft mt-1" style="align-items:start;">
+        <!-- Panel objetivo -->
+        <div class="objective">
+          <div class="lbl">Objetivo</div>
+          <div class="txt">Encontrar y filtrar literatura relevante.</div>
+        </div>
+
+        <!-- Fichas de herramientas -->
+        <div class="stack" style="gap:1.1em;">
+          <div class="entries">
+            <div class="entry">
+              <span class="tag">Elicit</span>
+              <span class="body">Formula tu pregunta de investigación y extrae los <i>findings</i> de los papers.</span>
+            </div>
+            <div class="entry">
+              <span class="tag">Consensus</span>
+              <span class="body">Respuestas basadas en evidencia científica.</span>
+            </div>
+          </div>
+          <hr class="rule" />
+          <p class="caption">
+            <span class="note">Tip.</span> Verifica siempre la fuente primaria <i>(primary source)</i>.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 06 — LECTURA Y SÍNTESIS DE FUENTES
+         ==================================================================== -->
+    <section class="slide" data-slide="6" data-runhead="Síntesis">
+      <div class="folio folio--br">06</div>
+
+      <div class="slide-top">
+        <span class="eyebrow">Lectura y síntesis de fuentes</span>
+        <span class="runhead" data-runhead-slot></span>
+      </div>
+      <hr class="rule rule--ink mt-half" />
+
+      <div class="cols mt-1" style="align-items:start;">
+        <div class="stack" style="gap:1.1em;">
+          <div class="entries">
+            <div class="entry">
+              <span class="tag tag--accent">NotebookLM</span>
+              <span class="body">Sube tus PDFs y pregunta con citas a tus propios documentos.</span>
+            </div>
+          </div>
+          <ul class="dashes" style="font-size:clamp(19px,1.7vw,28px);">
+            <li>Genera resúmenes</li>
+            <li>Líneas de tiempo</li>
+            <li>Mapas conceptuales</li>
+          </ul>
+        </div>
+
+        <div class="stack mt-auto" style="gap:0.9em;align-self:end;">
+          <hr class="rule rule--accent" />
+          <p class="caption">
+            <span class="note">Advertencia.</span> Cuidado con las alucinaciones
+            <i>(hallucinations)</i>: verifica cada cita.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 07 — ESCRITURA ACADÉMICA ASISTIDA
+         ==================================================================== -->
+    <section class="slide" data-slide="7" data-runhead="Escritura">
+      <div class="folio folio--br">07</div>
+
+      <div class="slide-top">
+        <span class="eyebrow">Escritura académica asistida</span>
+        <span class="runhead" data-runhead-slot></span>
+      </div>
+      <hr class="rule rule--ink mt-half" />
+
+      <div class="cols mt-1" style="align-items:center;">
+        <!-- Pull-quote central -->
+        <blockquote class="pullquote">
+          El borrador puede ser de la IA;
+          <span class="em">la voz y las ideas son tuyas.</span>
+        </blockquote>
+
+        <div class="stack" style="gap:1.1em;">
+          <div class="stack" style="gap:0.5em;">
+            <span class="eyebrow" style="color:var(--ink-faint);">Usos</span>
+            <ul class="dashes" style="font-size:clamp(19px,1.6vw,27px);">
+              <li>Estructurar</li>
+              <li>Parafrasear</li>
+              <li>Mejorar la claridad</li>
+              <li>Traducir</li>
+            </ul>
+          </div>
+          <hr class="rule" />
+          <p class="caption">
+            <span class="note">Integridad.</span> Declara el uso de IA según la
+            política de tu institución.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 08 — ANÁLISIS DE DATOS Y CÓDIGO
+         ==================================================================== -->
+    <section class="slide" data-slide="8" data-runhead="Datos &amp; código">
+      <div class="folio folio--br">08</div>
+
+      <div class="slide-top">
+        <span class="eyebrow">Análisis de datos y código</span>
+        <span class="runhead" data-runhead-slot></span>
+      </div>
+      <hr class="rule rule--ink mt-half" />
+
+      <div class="cols cols--narrowleft mt-1" style="align-items:start;">
+        <blockquote class="pullquote" style="font-size:clamp(26px,2.7vw,42px);">
+          Pega tus datos o describe el problema; la IA genera y explica código
+          <span class="em">(Python / R).</span>
+        </blockquote>
+
+        <div class="stack" style="gap:1.1em;">
+          <div class="stack" style="gap:0.5em;">
+            <span class="eyebrow" style="color:var(--ink-faint);">Casos</span>
+            <ul class="dashes" style="font-size:clamp(19px,1.6vw,27px);">
+              <li>Limpieza de datos</li>
+              <li>Estadística descriptiva</li>
+              <li>Visualización</li>
+            </ul>
+          </div>
+          <hr class="rule" />
+          <p class="caption">
+            <span class="note">Tip.</span> Pide que explique cada paso; no ejecutes
+            código que no entiendas.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 09 — PROMPTING EFECTIVO (cuatro principios)
+         ==================================================================== -->
+    <section class="slide" data-slide="9" data-runhead="Prompting">
+      <div class="folio folio--tr">09</div>
+
+      <div class="slide-top">
+        <span class="eyebrow">Prompting efectivo</span>
+        <span class="runhead" data-runhead-slot></span>
+      </div>
+      <h2 class="head mt-half" style="font-size:clamp(24px,2.6vw,40px);">Cuatro principios</h2>
+
+      <!-- Cuatro columnas numeradas con regla superior -->
+      <div class="principles mt-1">
+        <div class="p">
+          <span class="pn">1</span>
+          <span class="pt">Rol</span>
+          <span class="pd">Asigna un rol: <em>«Actúa como revisor de metodología».</em></span>
+        </div>
+        <div class="p">
+          <span class="pn">2</span>
+          <span class="pt">Contexto</span>
+          <span class="pd">Da contexto, objetivo y audiencia.</span>
+        </div>
+        <div class="p">
+          <span class="pn">3</span>
+          <span class="pt">Ejemplos</span>
+          <span class="pd">Muestra ejemplos del formato deseado <em>(few-shot).</em></span>
+        </div>
+        <div class="p">
+          <span class="pn">4</span>
+          <span class="pt">Formato</span>
+          <span class="pd">Especifica estructura y longitud de la salida <em>(output).</em></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 10 — ÉTICA E INTEGRIDAD ACADÉMICA
+         ==================================================================== -->
+    <section class="slide" data-slide="10" data-runhead="Ética">
+      <div class="folio folio--tr">10</div>
+
+      <div class="slide-top">
+        <span class="eyebrow">Ética e integridad académica</span>
+        <span class="runhead" data-runhead-slot></span>
+      </div>
+      <h2 class="head mt-half" style="font-size:clamp(24px,2.6vw,40px);">Cuatro guardas indispensables</h2>
+
+      <div class="principles mt-1">
+        <div class="p">
+          <span class="pn">1</span>
+          <span class="pt">Verificación</span>
+          <span class="pd">La IA puede inventar datos y referencias.</span>
+        </div>
+        <div class="p">
+          <span class="pn">2</span>
+          <span class="pt">Transparencia</span>
+          <span class="pd">Cita el uso de IA.</span>
+        </div>
+        <div class="p">
+          <span class="pn">3</span>
+          <span class="pt">Privacidad</span>
+          <span class="pd">No subas datos sensibles o confidenciales.</span>
+        </div>
+        <div class="p">
+          <span class="pn">4</span>
+          <span class="pt">Sesgos <span style="font-weight:400;">(bias)</span></span>
+          <span class="pd">Los modelos reflejan los sesgos de sus datos.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 11 — EJERCICIO PRÁCTICO
+         ==================================================================== -->
+    <section class="slide" data-slide="11" data-runhead="Ejercicio">
+      <div class="folio folio--br">11</div>
+
+      <div class="slide-top">
+        <span class="eyebrow">Ejercicio práctico</span>
+        <span class="runhead" data-runhead-slot></span>
+      </div>
+      <hr class="rule rule--ink mt-half" />
+
+      <div class="cols cols--narrowleft mt-1" style="align-items:start;">
+        <div class="stack" style="gap:1.1em;">
+          <div class="objective">
+            <div class="lbl">Instrucción</div>
+            <div class="txt">Elige un paper de tu área.</div>
+          </div>
+          <p class="caption">
+            <span class="note">Meta.</span> 15 minutos · en parejas.
+          </p>
+        </div>
+
+        <ol class="editorial" style="grid-template-columns:1fr;">
+          <li>Resume su contribución con una herramienta.</li>
+          <li>Formula 3 preguntas críticas.</li>
+          <li>Verifica una afirmación contra la fuente.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         SLIDE 12 — RECURSOS Y CIERRE
+         ==================================================================== -->
+    <section class="slide" data-slide="12" data-runhead="Cierre">
+      <div class="folio folio--br">12</div>
+
+      <div class="stack grow">
+        <div class="mt-1">
+          <span class="eyebrow">Recursos y cierre</span>
+        </div>
+        <hr class="rule rule--ink mt-1" />
+
+        <h2 class="head mt-2" style="max-width:16ch;">Gracias.<br/>Seguimos la conversación.</h2>
+
+        <div class="entries mt-2" style="gap:1.1em;max-width:34ch;">
+          <div class="entry">
+            <span class="tag">Slides</span>
+            <span class="body">Diapositivas y guía de prompts: <span class="note">[enlace]</span></span>
+          </div>
+          <div class="entry">
+            <span class="tag">Q&amp;A</span>
+            <span class="body">Preguntas · Q&amp;A</span>
+          </div>
+          <div class="entry">
+            <span class="tag tag--accent">Contacto</span>
+            <span class="body">Gracias · <span class="note">[correo de contacto]</span></span>
+          </div>
+        </div>
+
+        <div class="mt-auto">
+          <hr class="rule" />
+          <p class="hint mt-half">Inteligencia Artificial para la Investigación · Taller</p>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /#deck -->
+</div><!-- /#stage -->
+
+<!-- Zonas de clic invisibles para prev/next -->
+<div id="navzones" aria-hidden="true">
+  <div class="zone prev" data-nav="prev" title="Anterior"></div>
+  <div class="zone next" data-nav="next" title="Siguiente"></div>
+</div>
+
+<!-- UI fija: contador + puntos de progreso -->
+<div id="ui">
+  <div id="counter" aria-live="polite">
+    <span class="current">01</span><span class="sep">/</span><span class="total">12</span>
+  </div>
+  <nav id="dots" aria-label="Navegación de diapositivas"></nav>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ===================== ESTADO Y REFERENCIAS ===================== */
+  var deck     = document.getElementById('deck');
+  var slides   = Array.prototype.slice.call(deck.querySelectorAll('.slide'));
+  var total    = slides.length;
+  var current  = 0;          // índice 0-based de la slide activa
+  var animating = false;     // bloquea durante la transición
+  var reduced  = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var counterCur = document.querySelector('#counter .current');
+  var counterTot = document.querySelector('#counter .total');
+  var dotsWrap   = document.getElementById('dots');
+  var progressbar= document.getElementById('progressbar');
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  /* ===================== CONSTRUCCIÓN DE LA UI ===================== */
+  counterTot.textContent = pad(total);
+
+  // Puntos de progreso (uno por slide), clicables.
+  slides.forEach(function(slide, i){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-label', 'Ir a la diapositiva ' + (i + 1));
+    b.innerHTML = '<span class="bead"></span>';
+    b.addEventListener('click', function(){ goTo(i); });
+    dotsWrap.appendChild(b);
+  });
+  var dotButtons = Array.prototype.slice.call(dotsWrap.children);
+
+  // Rellena los "running head" de cada slide a partir de data-runhead.
+  slides.forEach(function(slide){
+    var slot = slide.querySelector('[data-runhead-slot]');
+    if (slot) slot.textContent = slide.getAttribute('data-runhead') || '';
+  });
+
+  /* ===================== TRANSICIÓN / RENDER ===================== */
+  function setActive(i){
+    slides.forEach(function(s, idx){
+      s.classList.toggle('is-active', idx === i);
+      if (idx !== i){
+        s.classList.remove('is-leaving-left','is-leaving-right','from-left');
+      }
+    });
+    counterCur.textContent = pad(i + 1);
+    dotButtons.forEach(function(b, idx){
+      b.setAttribute('aria-current', idx === i ? 'true' : 'false');
+    });
+    // Barra de progreso: porción acumulada.
+    var pct = total <= 1 ? 100 : (i / (total - 1)) * 100;
+    progressbar.style.width = pct + '%';
+  }
+
+  // Inicializa la primera slide sin animación de entrada.
+  function init(){
+    slides.forEach(function(s){ s.classList.remove('is-active','is-leaving-left','is-leaving-right','from-left'); });
+    setActive(0);
+  }
+
+  function goTo(target){
+    if (target === current) return;
+    target = Math.max(0, Math.min(total - 1, target));
+    if (target === current) return;
+
+    var forward = target > current;
+    var outgoing = slides[current];
+    var incoming = slides[target];
+
+    if (reduced){
+      // Fallback: sólo opacidad, sin desplazamiento.
+      outgoing.classList.remove('is-active');
+      setActive(target);
+      current = target;
+      return;
+    }
+
+    animating = true;
+
+    // Prepara la entrante en su posición de espera (der. si avanza, izq. si retrocede).
+    incoming.classList.remove('is-active','is-leaving-left','is-leaving-right','from-left');
+    if (forward){
+      // por defecto la slide está a la derecha (translateX 100%) -> sólo activar
+    } else {
+      incoming.classList.add('from-left'); // a la izquierda, lista para entrar
+    }
+
+    // Fuerza reflow para que el estado inicial de la entrante se aplique.
+    // eslint-disable-next-line no-unused-expressions
+    incoming.offsetWidth;
+
+    // Saca la saliente y mete la entrante.
+    outgoing.classList.remove('is-active');
+    outgoing.classList.add(forward ? 'is-leaving-left' : 'is-leaving-right');
+
+    incoming.classList.remove('from-left');
+    incoming.classList.add('is-active');
+
+    setActive(target); // actualiza contador/dots/barra de inmediato
+
+    current = target;
+
+    // Limpia clases de la saliente al terminar la transición.
+    var done = function(){
+      outgoing.classList.remove('is-leaving-left','is-leaving-right');
+      outgoing.removeEventListener('transitionend', done);
+      animating = false;
+    };
+    outgoing.addEventListener('transitionend', done);
+    // Respaldo por si transitionend no dispara.
+    setTimeout(done, 700);
+  }
+
+  function next(){ if (!animating) goTo(current + 1); }
+  function prev(){ if (!animating) goTo(current - 1); }
+  function first(){ if (!animating) goTo(0); }
+  function last(){ if (!animating) goTo(total - 1); }
+
+  /* ===================== TECLADO ===================== */
+  document.addEventListener('keydown', function(e){
+    // Evita interferir si el usuario tiene foco en un campo editable.
+    var t = e.target;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+
+    switch (e.key){
+      case 'ArrowRight':
+      case 'PageDown':
+        e.preventDefault(); next(); break;
+      case ' ':
+      case 'Spacebar': // navegadores antiguos
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft':
+      case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home':
+        e.preventDefault(); first(); break;
+      case 'End':
+        e.preventDefault(); last(); break;
+      case 'f':
+      case 'F':
+        e.preventDefault(); toggleFullscreen(); break;
+      default: break;
+    }
+  });
+
+  /* ===================== ZONAS DE CLIC ===================== */
+  document.getElementById('navzones').addEventListener('click', function(e){
+    var z = e.target.closest('[data-nav]');
+    if (!z) return;
+    if (z.getAttribute('data-nav') === 'next') next();
+    else prev();
+  });
+
+  /* ===================== PANTALLA COMPLETA ===================== */
+  function toggleFullscreen(){
+    var el = document.documentElement;
+    if (!document.fullscreenElement && !document.webkitFullscreenElement){
+      (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen || function(){}).call(document);
+    }
+  }
+
+  /* ===================== SWIPE TÁCTIL ===================== */
+  var touchStartX = 0, touchStartY = 0, touchActive = false;
+  deck.addEventListener('touchstart', function(e){
+    if (e.touches.length !== 1) return;
+    touchActive = true;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive:true });
+
+  deck.addEventListener('touchend', function(e){
+    if (!touchActive) return;
+    touchActive = false;
+    var dx = e.changedTouches[0].clientX - touchStartX;
+    var dy = e.changedTouches[0].clientY - touchStartY;
+    // Umbral horizontal y predominio sobre el eje vertical.
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4){
+      if (dx < 0) next(); else prev();
+    }
+  }, { passive:true });
+
+  /* ===================== ARRANQUE ===================== */
+  init();
+})();
+</script>
+</body>
+</html>

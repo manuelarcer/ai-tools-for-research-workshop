@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<!--
+  =====================================================================
+  DESIGN DIRECTION: "Terminal / código"
+  ---------------------------------------------------------------------
+  Developer terminal & IDE aesthetic. Dark base (#0D1117), monospace
+  typography (JetBrains Mono + robust system fallbacks), command-line
+  motifs (prompt, > bullets, faux title-bar dots, line numbers,
+  blinking cursor, top status/tab bar).
+
+  TRANSITIONS:
+    - Heading reveal = typewriter / decode effect on slide enter.
+    - Slide change = quick upward slide (~350ms) + subtle scanline flicker.
+    - Reduced-motion: instant fallback, no typewriter auto-animation.
+
+  CONTROLS:
+    - Next:  Right Arrow / Space / PageDown / click right ~60%
+    - Prev:  Left Arrow / PageUp / click left ~40%
+    - Home:  jump to first slide
+    - End:   jump to last slide
+    - F:     toggle fullscreen
+    - Touch swipe left/right to navigate
+    - Top-right: slide counter "03 / 12"
+    - Bottom: clickable progress segments jump to any slide
+
+  TEMPLATE NOTE:
+    Each slide is a <section class="slide"> block, clearly commented
+    and easily editable. The heading element carries data-decode for the
+    typewriter reveal. Duplicate a block and edit its content to extend.
+  =====================================================================
+-->
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inteligencia Artificial para la Investigación · Taller</title>
+
+<!-- Google Fonts: JetBrains Mono (with robust monospace fallbacks in CSS) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet" />
+
+<style>
+  /* ============================ TOKENS ============================ */
+  :root{
+    --bg:        #0D1117;   /* dark base */
+    --bg-2:      #11151C;   /* slightly raised panel */
+    --bg-3:      #161B22;   /* code-block surface */
+    --bg-bar:    #0A0D12;   /* status/title bar */
+    --line:      #21262D;   /* hairline borders */
+    --line-2:    #30363D;   /* stronger border */
+
+    --text:      #E6EDF3;   /* primary light-grey text */
+    --muted:     #8B949E;   /* secondary muted */
+    --faint:     #5A636E;   /* line numbers / very muted */
+
+    --green:     #3FB950;   /* terminal green accent */
+    --amber:     #D29922;   /* amber accent */
+    --blue:      #58A6FF;   /* syntax: identifiers / links */
+    --purple:    #BC8CFF;   /* syntax: keywords (used sparingly) */
+    --coral:     #FF7B72;   /* syntax: strings/danger */
+    --teal:      #56D4BC;   /* syntax: constants */
+
+    --dot-red:   #FF5F56;
+    --dot-yel:   #FFBD2E;
+    --dot-grn:   #27C93F;
+
+    --mono: 'JetBrains Mono', 'IBM Plex Mono', 'Fira Code',
+            ui-monospace, 'SF Mono', 'SFMono-Regular', Menlo, Consolas,
+            'Liberation Mono', 'Courier New', monospace;
+
+    --slide-ms: 360ms;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--mono);
+    font-size:18px;
+    line-height:1.55;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ===================== STAGE / SLIDE SHELL ====================== */
+  .stage{
+    position:fixed; inset:0;
+    display:flex; align-items:stretch; justify-content:stretch;
+  }
+
+  .slide{
+    position:absolute; inset:0;
+    display:none;
+    flex-direction:column;
+    padding:64px 84px 92px;
+    /* leave room for top bar (handled by inner offset) */
+    opacity:0;
+    will-change:transform,opacity;
+  }
+  .slide.active{ display:flex; opacity:1; }
+
+  /* Enter animation: quick upward slide */
+  @keyframes slideUpIn{
+    0%{   transform:translateY(34px); opacity:0; }
+    100%{ transform:translateY(0);    opacity:1; }
+  }
+  .slide.anim{ animation:slideUpIn var(--slide-ms) cubic-bezier(.22,.61,.36,1) both; }
+
+  /* Scanline flicker overlay (fires briefly on each transition) */
+  .scanflicker{
+    position:fixed; inset:0; z-index:60; pointer-events:none;
+    opacity:0;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        rgba(63,185,80,0.06) 0px,
+        rgba(63,185,80,0.06) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+    mix-blend-mode:screen;
+  }
+  .scanflicker.fire{ animation:scan var(--slide-ms) steps(2,end) 1; }
+  @keyframes scan{
+    0%{ opacity:0; }
+    18%{ opacity:.9; }
+    40%{ opacity:.25; }
+    65%{ opacity:.6; }
+    100%{ opacity:0; }
+  }
+
+  /* Persistent, very faint global scanlines + vignette for CRT vibe */
+  .crt{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:
+      radial-gradient(120% 120% at 50% 0%, transparent 60%, rgba(0,0,0,0.35) 100%);
+  }
+  .crt::after{
+    content:""; position:absolute; inset:0;
+    background:repeating-linear-gradient(
+      to bottom, rgba(255,255,255,0.012) 0 1px, transparent 1px 3px);
+  }
+
+  /* ====================== TOP STATUS / TAB BAR ==================== */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    height:40px;
+    background:var(--bg-bar);
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:0;
+    font-size:13px; color:var(--muted);
+    user-select:none;
+  }
+  .topbar .dots{ display:flex; gap:8px; padding:0 18px; }
+  .topbar .dot{ width:12px; height:12px; border-radius:50%; }
+  .dot.r{ background:var(--dot-red); }
+  .dot.y{ background:var(--dot-yel); }
+  .dot.g{ background:var(--dot-grn); }
+
+  .topbar .tab{
+    display:flex; align-items:center; gap:8px;
+    height:100%; padding:0 18px;
+    border-right:1px solid var(--line);
+    color:var(--muted);
+    letter-spacing:.02em;
+  }
+  .topbar .tab.cur{
+    color:var(--text);
+    background:var(--bg);
+    border-bottom:2px solid var(--green);
+  }
+  .topbar .tab .tn{ color:var(--faint); }
+  .topbar .filename{ color:var(--muted); }
+  .topbar .filename .ext{ color:var(--amber); }
+
+  .topbar .right{
+    margin-left:auto; display:flex; align-items:center; gap:18px;
+    padding:0 20px; color:var(--faint); font-size:12px;
+  }
+  .topbar .branch{ color:var(--green); }
+  .topbar .branch::before{ content:"\2387  "; }
+
+  /* ========================= PROMPT LINE ========================= */
+  .prompt{
+    font-size:15px; color:var(--muted); margin:0 0 26px;
+    letter-spacing:.01em;
+  }
+  .prompt .user{ color:var(--green); }
+  .prompt .at{ color:var(--muted); }
+  .prompt .host{ color:var(--blue); }
+  .prompt .path{ color:var(--amber); }
+  .prompt .sym{ color:var(--text); }
+  .prompt .cmd{ color:var(--text); }
+  .prompt .flag{ color:var(--teal); }
+
+  /* ====================== HEADINGS / EYEBROW ===================== */
+  .eyebrow{
+    font-size:14px; color:var(--green); letter-spacing:.18em;
+    text-transform:uppercase; margin:0 0 18px;
+  }
+  .eyebrow .hash{ color:var(--faint); }
+
+  h1.title{
+    font-size:clamp(40px, 5.4vw, 76px);
+    line-height:1.05; font-weight:700; margin:0 0 22px;
+    letter-spacing:-.01em; color:var(--text);
+  }
+  h2.heading{
+    font-size:clamp(30px, 3.8vw, 50px);
+    line-height:1.08; font-weight:700; margin:0 0 8px;
+    letter-spacing:-.005em; color:var(--text);
+  }
+  .heading .accent{ color:var(--green); }
+  .rule{
+    height:1px; width:120px; background:var(--line-2);
+    margin:0 0 30px; position:relative;
+  }
+  .rule::before{
+    content:""; position:absolute; left:0; top:0;
+    width:46px; height:1px; background:var(--green);
+  }
+
+  /* blinking cursor block */
+  .cursor{
+    display:inline-block; width:0.62em; height:1.04em;
+    background:var(--green); margin-left:.12em;
+    transform:translateY(.16em);
+    animation:blink 1.06s steps(1,end) infinite;
+  }
+  @keyframes blink{ 0%,49%{opacity:1} 50%,100%{opacity:0} }
+
+  .subtitle{ font-size:clamp(20px,2vw,26px); color:var(--muted); max-width:60ch; margin:6px 0 0; }
+
+  /* ===================== GENERIC CONTENT BITS ==================== */
+  .body{ flex:1 1 auto; min-height:0; }
+
+  .lead{
+    font-size:clamp(26px, 3.2vw, 40px);
+    line-height:1.28; font-weight:500; color:var(--text);
+    max-width:24ch; margin:6px 0 30px;
+  }
+  .lead .g{ color:var(--green); }
+  .lead .a{ color:var(--amber); }
+  .lead .str{ color:var(--coral); }
+
+  /* ">" bullet list */
+  ul.bullets{ list-style:none; margin:0; padding:0; }
+  ul.bullets li{
+    position:relative; padding-left:34px; margin:0 0 18px;
+    font-size:clamp(20px,2vw,26px); color:var(--text);
+  }
+  ul.bullets li::before{
+    content:">"; position:absolute; left:0; top:0;
+    color:var(--green); font-weight:700;
+  }
+  ul.bullets li .k{ color:var(--blue); }
+  ul.bullets li .sub{ display:block; color:var(--muted); font-size:.82em; margin-top:3px; }
+
+  /* note / callout line */
+  .note{
+    font-size:clamp(17px,1.7vw,21px); color:var(--muted);
+    border-left:2px solid var(--amber); padding:10px 0 10px 18px;
+    margin-top:26px; background:linear-gradient(90deg, rgba(210,153,34,0.06), transparent);
+  }
+  .note b{ color:var(--amber); font-weight:500; }
+  .note.green{ border-color:var(--green); background:linear-gradient(90deg, rgba(63,185,80,0.06), transparent); }
+  .note.green b{ color:var(--green); }
+  .note .lbl{ color:var(--faint); }
+
+  .note .comment{ color:var(--faint); }
+
+  /* ====================== CODE-BLOCK CARD ======================= */
+  .win{
+    background:var(--bg-3);
+    border:1px solid var(--line-2);
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 18px 50px -28px rgba(0,0,0,.9);
+  }
+  .win .bar{
+    display:flex; align-items:center; gap:8px;
+    height:34px; padding:0 14px;
+    background:var(--bg-bar);
+    border-bottom:1px solid var(--line);
+    color:var(--faint); font-size:12.5px;
+  }
+  .win .bar .d{ width:11px; height:11px; border-radius:50%; }
+  .win .bar .label{ margin-left:10px; color:var(--muted); }
+  .win .bar .label .ext{ color:var(--amber); }
+  .win .body-code{ padding:18px 20px; }
+
+  /* code line with optional line number */
+  .codeline{
+    display:flex; gap:18px; align-items:flex-start;
+    font-size:clamp(16px,1.55vw,20px); line-height:1.7;
+  }
+  .codeline .ln{
+    color:var(--faint); user-select:none; text-align:right;
+    min-width:2.2ch; flex:0 0 auto;
+  }
+  .codeline .src{ white-space:pre-wrap; }
+  .tok-kw{ color:var(--purple); }
+  .tok-fn{ color:var(--blue); }
+  .tok-str{ color:var(--coral); }
+  .tok-num{ color:var(--teal); }
+  .tok-com{ color:var(--faint); font-style:italic; }
+  .tok-var{ color:var(--text); }
+  .tok-prop{ color:var(--green); }
+
+  /* ========================= GRIDS ============================= */
+  .grid{ display:grid; gap:22px; }
+  .grid.two{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+
+  /* category card (panorama de herramientas) */
+  .cat{
+    background:var(--bg-2);
+    border:1px solid var(--line);
+    border-left:3px solid var(--green);
+    border-radius:0 8px 8px 0;
+    padding:18px 22px;
+  }
+  .cat:nth-child(2){ border-left-color:var(--amber); }
+  .cat:nth-child(3){ border-left-color:var(--blue); }
+  .cat:nth-child(4){ border-left-color:var(--purple); }
+  .cat h3{
+    margin:0 0 12px; font-size:clamp(18px,1.8vw,22px); font-weight:500;
+    color:var(--text); display:flex; align-items:center; gap:10px;
+  }
+  .cat h3 .pfx{ color:var(--green); }
+  .cat:nth-child(2) h3 .pfx{ color:var(--amber); }
+  .cat:nth-child(3) h3 .pfx{ color:var(--blue); }
+  .cat:nth-child(4) h3 .pfx{ color:var(--purple); }
+  .tools{ display:flex; flex-wrap:wrap; gap:8px; }
+  .tag{
+    font-size:clamp(14px,1.4vw,17px);
+    color:var(--text);
+    background:var(--bg-3);
+    border:1px solid var(--line-2);
+    border-radius:6px; padding:4px 11px;
+  }
+
+  /* numbered agenda (two columns) */
+  .agenda{
+    display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:14px 48px; margin:0;
+  }
+  .agenda .item{
+    display:flex; align-items:baseline; gap:16px;
+    font-size:clamp(19px,1.9vw,24px);
+    padding:9px 0; border-bottom:1px dashed var(--line);
+  }
+  .agenda .num{ color:var(--green); min-width:3.4ch; }
+  .agenda .item .txt{ color:var(--text); }
+  .agenda .item .txt .en{ color:var(--blue); }
+
+  /* steps (ejercicio) */
+  .steps{ list-style:none; margin:6px 0 0; padding:0; counter-reset:s; }
+  .steps li{
+    position:relative; padding-left:48px; margin:0 0 16px;
+    font-size:clamp(19px,1.9vw,24px); color:var(--text);
+  }
+  .steps li::before{
+    counter-increment:s; content:"0" counter(s);
+    position:absolute; left:0; top:0;
+    color:var(--bg); background:var(--green);
+    border-radius:5px; font-size:.7em; font-weight:700;
+    padding:3px 7px; line-height:1;
+    transform:translateY(.18em);
+  }
+
+  /* principle / value cards (prompting, ética) */
+  .cards4{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+  .pcard{
+    background:var(--bg-2); border:1px solid var(--line);
+    border-radius:8px; padding:16px 20px;
+  }
+  .pcard .key{
+    font-size:clamp(18px,1.8vw,22px); font-weight:500; color:var(--green);
+    margin:0 0 6px; display:flex; align-items:center; gap:8px;
+  }
+  .pcard .key .c{ color:var(--faint); font-weight:400; }
+  .pcard .desc{ font-size:clamp(16px,1.55vw,20px); color:var(--muted); margin:0; }
+  .pcard .desc .en{ color:var(--blue); }
+  .pcard .desc .q{ color:var(--coral); }
+
+  /* resources / contact list */
+  .reslist{ list-style:none; margin:8px 0 0; padding:0; }
+  .reslist li{
+    display:flex; align-items:baseline; gap:16px;
+    font-size:clamp(20px,2vw,26px); padding:12px 0;
+    border-bottom:1px dashed var(--line); color:var(--text);
+  }
+  .reslist li .pfx{ color:var(--green); }
+  .reslist li .ph{ color:var(--blue); }
+
+  /* portada footer / hint */
+  .foot{
+    margin-top:auto; display:flex; flex-wrap:wrap; gap:10px 26px;
+    align-items:center; font-size:clamp(15px,1.5vw,18px); color:var(--muted);
+  }
+  .foot .speaker b{ color:var(--text); font-weight:500; }
+  .hint{
+    font-size:14px; color:var(--faint);
+    display:inline-flex; align-items:center; gap:8px;
+  }
+  .hint .key{
+    border:1px solid var(--line-2); border-radius:5px;
+    padding:1px 7px; color:var(--muted); background:var(--bg-2); font-size:13px;
+  }
+  .hint .comment{ color:var(--faint); }
+
+  /* ===================== BOTTOM PROGRESS ======================= */
+  .progress{
+    position:fixed; left:84px; right:84px; bottom:30px; z-index:50;
+    display:flex; gap:7px; align-items:center;
+  }
+  .progress .seg{
+    flex:1 1 auto; height:4px; border-radius:2px;
+    background:var(--line-2); cursor:pointer;
+    transition:background .25s ease, transform .15s ease;
+  }
+  .progress .seg:hover{ transform:scaleY(2.0); background:var(--muted); }
+  .progress .seg.done{ background:#2a6b34; }
+  .progress .seg.cur{ background:var(--green); }
+
+  /* slide counter (bottom-right, monospace) */
+  .counter{
+    position:fixed; right:84px; bottom:46px; z-index:50;
+    font-size:14px; color:var(--muted); letter-spacing:.08em;
+  }
+  .counter .cur{ color:var(--green); }
+  .counter .sep{ color:var(--faint); margin:0 4px; }
+
+  /* tiny help glyph bottom-left */
+  .help{
+    position:fixed; left:84px; bottom:46px; z-index:50;
+    font-size:13px; color:var(--faint);
+  }
+  .help .key{
+    border:1px solid var(--line-2); border-radius:4px;
+    padding:0 6px; color:var(--muted); background:var(--bg-2);
+  }
+
+  /* ===================== RESPONSIVE NUDGES ===================== */
+  @media (max-width:960px){
+    .slide{ padding:58px 40px 96px; }
+    .progress{ left:40px; right:40px; }
+    .counter{ right:40px; }
+    .help{ left:40px; }
+    .agenda{ grid-template-columns:1fr; }
+    .grid.two{ grid-template-columns:1fr; }
+    .cards4{ grid-template-columns:1fr; }
+    .topbar .tab:not(.cur){ display:none; }
+  }
+
+  /* ============== REDUCED MOTION: INSTANT FALLBACK ============== */
+  @media (prefers-reduced-motion: reduce){
+    .slide.anim{ animation:none; }
+    .scanflicker.fire{ animation:none; opacity:0; }
+    .cursor{ animation:none; }
+    .progress .seg{ transition:none; }
+    .crt::after{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== TOP STATUS / TAB BAR ===================== -->
+<header class="topbar" aria-hidden="true">
+  <div class="dots">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+  </div>
+  <div class="tab cur">
+    <span class="tn" id="tabNum">01</span>
+    <span class="filename" id="tabName">portada<span class="ext">.md</span></span>
+  </div>
+  <div class="tab">
+    <span class="tn">~</span> taller-ia
+  </div>
+  <div class="right">
+    <span class="branch">main</span>
+    <span>UTF-8</span>
+    <span>ES</span>
+  </div>
+</header>
+
+<!-- persistent CRT overlay + transition flicker -->
+<div class="crt" aria-hidden="true"></div>
+<div class="scanflicker" id="flicker" aria-hidden="true"></div>
+
+<!-- ============================ STAGE ============================ -->
+<main class="stage" id="stage">
+
+  <!-- ============================================================= -->
+  <!-- SLIDE 01 — PORTADA                                            -->
+  <!-- ============================================================= -->
+  <section class="slide" data-tab="portada.md">
+    <p class="prompt">
+      <span class="user">investigador</span><span class="at">@</span><span class="host">taller</span><span class="sym">:</span><span class="path">~</span><span class="sym">$</span>
+      <span class="cmd">./iniciar-taller.sh</span> <span class="flag">--modo</span> presentacion
+    </p>
+
+    <p class="eyebrow"><span class="hash">#</span> Taller · Universidad</p>
+
+    <h1 class="title" data-decode>Inteligencia Artificial para la Investigación</h1>
+
+    <p class="subtitle">Herramientas y flujos de trabajo para estudiantes e investigadores<span class="cursor"></span></p>
+
+    <div class="foot">
+      <span class="speaker">Ponente: <b>[Nombre]</b> · [Fecha]</span>
+      <span class="hint">
+        <span class="comment">// usa</span>
+        <span class="key">&larr;</span><span class="key">&rarr;</span>
+        <span class="comment">o</span>
+        <span class="key">space</span>
+        <span class="comment">para avanzar</span>
+      </span>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- SLIDE 02 — AGENDA DEL DÍA                                     -->
+  <!-- ============================================================= -->
+  <section class="slide" data-tab="agenda.md">
+    <p class="prompt">
+      <span class="user">investigador</span><span class="at">@</span><span class="host">taller</span><span class="sym">:</span><span class="path">~</span><span class="sym">$</span>
+      <span class="cmd">cat</span> agenda.md
+    </p>
+    <p class="eyebrow"><span class="hash">#</span> Plan</p>
+    <h2 class="heading" data-decode>Agenda del <span class="accent">día</span></h2>
+    <div class="rule"></div>
+
+    <div class="body">
+      <div class="agenda">
+        <div class="item"><span class="num">01</span><span class="txt">¿Por qué IA en la investigación?</span></div>
+        <div class="item"><span class="num">02</span><span class="txt">Panorama de herramientas</span></div>
+        <div class="item"><span class="num">03</span><span class="txt">Búsqueda y revisión de literatura</span></div>
+        <div class="item"><span class="num">04</span><span class="txt">Lectura y síntesis de fuentes</span></div>
+        <div class="item"><span class="num">05</span><span class="txt">Escritura académica asistida</span></div>
+        <div class="item"><span class="num">06</span><span class="txt">Análisis de datos y código</span></div>
+        <div class="item"><span class="num">07</span><span class="txt">Prompting efectivo</span></div>
+        <div class="item"><span class="num">08</span><span class="txt">Ética e integridad académica</span></div>
+        <div class="item"><span class="num">09</span><span class="txt">Ejercicio práctico</span></div>
+        <div class="item"><span class="num">10</span><span class="txt">Recursos y cierre</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- SLIDE 03 — ¿POR QUÉ IA EN LA INVESTIGACIÓN?                   -->
+  <!-- ============================================================= -->
+  <section class="slide" data-tab="por-que.md">
+    <p class="prompt">
+      <span class="user">investigador</span><span class="at">@</span><span class="host">taller</span><span class="sym">:</span><span class="path">~</span><span class="sym">$</span>
+      <span class="cmd">echo</span> <span style="color:var(--coral)">"¿por qué IA?"</span>
+    </p>
+    <p class="eyebrow"><span class="hash">#</span> 01 · Motivación</p>
+    <h2 class="heading" data-decode>¿Por qué IA en la <span class="accent">investigación</span>?</h2>
+    <div class="rule"></div>
+
+    <div class="body">
+      <p class="lead">
+        La <span class="g">IA generativa (LLMs)</span> no reemplaza el criterio del investigador:
+        <span class="a">amplifica su productividad.</span>
+      </p>
+
+      <ul class="bullets">
+        <li>Acelera <span class="k">tareas repetitivas</span></li>
+        <li>Explora la <span class="k">literatura</span> más rápido</li>
+        <li>Itera ideas y borradores <span class="k">(drafts)</span></li>
+      </ul>
+
+      <p class="note green"><span class="lbl">NOTE:</span> <b>Siempre con verificación humana.</b></p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- SLIDE 04 — PANORAMA DE HERRAMIENTAS                           -->
+  <!-- ============================================================= -->
+  <section class="slide" data-tab="panorama.md">
+    <p class="prompt">
+      <span class="user">investigador</span><span class="at">@</span><span class="host">taller</span><span class="sym">:</span><span class="path">~</span><span class="sym">$</span>
+      <span class="cmd">ls</span> <span class="flag">-la</span> ./herramientas
+    </p>
+    <p class="eyebrow"><span class="hash">#</span> 02 · Panorama</p>
+    <h2 class="heading" data-decode>Panorama de <span class="accent">herramientas</span></h2>
+    <div class="rule"></div>
+
+    <div class="body">
+      <div class="grid two">
+        <div class="cat">
+          <h3><span class="pfx">&gt;</span> Búsqueda &amp; literatura</h3>
+          <div class="tools">
+            <span class="tag">Elicit</span><span class="tag">Consensus</span>
+            <span class="tag">Semantic Scholar</span><span class="tag">Perplexity</span>
+          </div>
+        </div>
+        <div class="cat">
+          <h3><span class="pfx">&gt;</span> Lectura &amp; síntesis</h3>
+          <div class="tools">
+            <span class="tag">NotebookLM</span><span class="tag">ChatPDF</span>
+            <span class="tag">SciSpace</span>
+          </div>
+        </div>
+        <div class="cat">
+          <h3><span class="pfx">&gt;</span> Escritura &amp; edición</h3>
+          <div class="tools">
+            <span class="tag">ChatGPT</span><span class="tag">Claude</span>
+            <span class="tag">Paperpal</span>
+          </div>
+        </div>
+        <div class="cat">
+          <h3><span class="pfx">&gt;</span> Datos &amp; código</h3>
+          <div class="tools">
+            <span class="tag">Claude</span><span class="tag">ChatGPT (Code Interpreter)</span>
+            <span class="tag">Julius AI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- SLIDE 05 — BÚSQUEDA Y REVISIÓN DE LITERATURA                  -->
+  <!-- ============================================================= -->
+  <section class="slide" data-tab="literatura.md">
+    <p class="prompt">
+      <span class="user">investigador</span><span class="at">@</span><span class="host">taller</span><span class="sym">:</span><span class="path">~</span><span class="sym">$</span>
+      <span class="cmd">grep</span> <span class="flag">-r</span> <span style="color:var(--coral)">"evidencia"</span> ./papers
+    </p>
+    <p class="eyebrow"><span class="hash">#</span> 03 · Literatura</p>
+    <h2 class="heading" data-decode>Búsqueda y revisión de <span class="accent">literatura</span></h2>
+    <div class="rule"></div>
+
+    <div class="body">
+      <p class="lead" style="font-size:clamp(20px,2vw,26px); max-width:48ch; margin-bottom:24px;">
+        <span class="muted" style="color:var(--muted)">Objetivo:</span> Encontrar y filtrar literatura relevante.
+      </p>
+
+      <ul class="bullets">
+        <li><span class="k">Elicit</span> — formula tu pregunta de investigación y extrae los
+          <span class="k">findings</span> de los papers.</li>
+        <li><span class="k">Consensus</span> — respuestas basadas en evidencia científica.</li>
+      </ul>
+
+      <p class="note"><span class="lbl">TIP:</span> <b>Verifica siempre la fuente primaria (primary source).</b></p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- SLIDE 06 — LECTURA Y SÍNTESIS DE FUENTES                      -->
+  <!-- ============================================================= -->
+  <section class="slide" data-tab="sintesis.md">
+    <p class="prompt">
+      <span class="user">investigador</span><span class="at">@</span><span class="host">taller</span><span class="sym">:</span><span class="path">~</span><span class="sym">$</span>
+      <span class="cmd">notebooklm</span> <span class="flag">--upload</span> ./fuentes/*.pdf
+    </p>
+    <p class="eyebrow"><span class="hash">#</span> 04 · Síntesis</p>
+    <h2 class="heading" data-decode>Lectura y síntesis de <span class="accent">fuentes</span></h2>
+    <div class="rule"></div>
+
+    <div class="body">
+      <ul class="bullets">
+        <li><span class="k">NotebookLM</span> — sube tus PDFs y pregunta con citas a tus propios documentos.</li>
+        <li>Genera <span class="k">resúmenes</span>, <span class="k">líneas de tiempo</span> y <span class="k">mapas conceptuales</span>.</li>
+      </ul>
+
+      <p class="note"><span class="lbl">WARN:</span> <b>Cuidado con las alucinaciones (hallucinations): verifica cada cita.</b></p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- SLIDE 07 — ESCRITURA ACADÉMICA ASISTIDA                       -->
+  <!-- ============================================================= -->
+  <section class="slide" data-tab="escritura.md">
+    <p class="prompt">
+      <span class="user">investigador</span><span class="at">@</span><span class="host">taller</span><span class="sym">:</span><span class="path">~</span><span class="sym">$</span>
+      <span class="cmd">vim</span> manuscrito.tex
+    </p>
+    <p class="eyebrow"><span class="hash">#</span> 05 · Escritura</p>
+    <h2 class="heading" data-decode>Escritura académica <span class="accent">asistida</span></h2>
+    <div class="rule"></div>
+
+    <div class="body">
+      <p style="font-size:clamp(18px,1.7vw,22px); color:var(--muted); margin:0 0 16px;">
+        <span style="color:var(--faint)">Usos:</span>
+      </p>
+      <div class="tools" style="margin-bottom:30px;">
+        <span class="tag" style="font-size:clamp(16px,1.6vw,20px)">estructurar</span>
+        <span class="tag" style="font-size:clamp(16px,1.6vw,20px)">parafrasear</span>
+        <span class="tag" style="font-size:clamp(16px,1.6vw,20px)">mejorar la claridad</span>
+        <span class="tag" style="font-size:clamp(16px,1.6vw,20px)">traducir</span>
+      </div>
+
+      <p class="lead" style="font-size:clamp(24px,2.8vw,34px); max-width:30ch;">
+        El borrador puede ser de la IA; <span class="g">la voz y las ideas son tuyas.</span>
+      </p>
+
+      <p class="note"><span class="lbl">INTEGRIDAD:</span> <b>Declara el uso de IA según la política de tu institución.</b></p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- SLIDE 08 — ANÁLISIS DE DATOS Y CÓDIGO                         -->
+  <!-- ============================================================= -->
+  <section class="slide" data-tab="datos.py">
+    <p class="prompt">
+      <span class="user">investigador</span><span class="at">@</span><span class="host">taller</span><span class="sym">:</span><span class="path">~</span><span class="sym">$</span>
+      <span class="cmd">python</span> analisis.py
+    </p>
+    <p class="eyebrow"><span class="hash">#</span> 06 · Datos</p>
+    <h2 class="heading" data-decode>Análisis de datos y <span class="accent">código</span></h2>
+    <div class="rule"></div>
+
+    <div class="body">
+      <div class="grid two" style="grid-template-columns:1.15fr .85fr; align-items:start;">
+        <div>
+          <ul class="bullets">
+            <li>Pega tus datos o describe el problema; la IA genera y explica código
+              <span class="k">(Python / R)</span>.</li>
+          </ul>
+          <p style="font-size:clamp(17px,1.7vw,21px); color:var(--muted); margin:22px 0 10px;">
+            <span style="color:var(--faint)">Casos:</span>
+          </p>
+          <div class="tools">
+            <span class="tag" style="font-size:clamp(15px,1.5vw,19px)">limpieza de datos</span>
+            <span class="tag" style="font-size:clamp(15px,1.5vw,19px)">estadística descriptiva</span>
+            <span class="tag" style="font-size:clamp(15px,1.5vw,19px)">visualización</span>
+          </div>
+        </div>
+
+        <!-- faux code-block card -->
+        <div class="win">
+          <div class="bar">
+            <span class="d" style="background:var(--dot-red)"></span>
+            <span class="d" style="background:var(--dot-yel)"></span>
+            <span class="d" style="background:var(--dot-grn)"></span>
+            <span class="label">analisis<span class="ext">.py</span></span>
+          </div>
+          <div class="body-code">
+            <div class="codeline"><span class="ln">1</span><span class="src"><span class="tok-kw">import</span> <span class="tok-var">pandas</span> <span class="tok-kw">as</span> <span class="tok-var">pd</span></span></div>
+            <div class="codeline"><span class="ln">2</span><span class="src"><span class="tok-com"># cargar y resumir</span></span></div>
+            <div class="codeline"><span class="ln">3</span><span class="src"><span class="tok-var">df</span> = <span class="tok-var">pd</span>.<span class="tok-fn">read_csv</span>(<span class="tok-str">"datos.csv"</span>)</span></div>
+            <div class="codeline"><span class="ln">4</span><span class="src"><span class="tok-var">df</span>.<span class="tok-fn">describe</span>()</span></div>
+            <div class="codeline"><span class="ln">5</span><span class="src"><span class="tok-var">df</span>.<span class="tok-fn">plot</span>(<span class="tok-prop">kind</span>=<span class="tok-str">"hist"</span>)<span class="cursor" style="height:.9em"></span></span></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="note"><span class="lbl">TIP:</span> <b>Pide que explique cada paso; no ejecutes código que no entiendas.</b></p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- SLIDE 09 — PROMPTING EFECTIVO                                 -->
+  <!-- ============================================================= -->
+  <section class="slide" data-tab="prompting.md">
+    <p class="prompt">
+      <span class="user">investigador</span><span class="at">@</span><span class="host">taller</span><span class="sym">:</span><span class="path">~</span><span class="sym">$</span>
+      <span class="cmd">man</span> prompting
+    </p>
+    <p class="eyebrow"><span class="hash">#</span> 07 · Prompting</p>
+    <h2 class="heading" data-decode>Prompting <span class="accent">efectivo</span></h2>
+    <div class="rule"></div>
+
+    <div class="body">
+      <div class="cards4">
+        <div class="pcard">
+          <p class="key"><span class="c">01</span> Rol</p>
+          <p class="desc">Asigna un rol: <span class="q">'Actúa como revisor de metodología'.</span></p>
+        </div>
+        <div class="pcard">
+          <p class="key"><span class="c">02</span> Contexto</p>
+          <p class="desc">Da contexto, objetivo y audiencia.</p>
+        </div>
+        <div class="pcard">
+          <p class="key"><span class="c">03</span> Ejemplos</p>
+          <p class="desc">Muestra ejemplos del formato deseado <span class="en">(few-shot)</span>.</p>
+        </div>
+        <div class="pcard">
+          <p class="key"><span class="c">04</span> Formato</p>
+          <p class="desc">Especifica estructura y longitud de la salida <span class="en">(output)</span>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- SLIDE 10 — ÉTICA E INTEGRIDAD ACADÉMICA                       -->
+  <!-- ============================================================= -->
+  <section class="slide" data-tab="etica.md">
+    <p class="prompt">
+      <span class="user">investigador</span><span class="at">@</span><span class="host">taller</span><span class="sym">:</span><span class="path">~</span><span class="sym">$</span>
+      <span class="cmd">cat</span> <span class="flag">--warnings</span> etica.md
+    </p>
+    <p class="eyebrow"><span class="hash">#</span> 08 · Ética</p>
+    <h2 class="heading" data-decode>Ética e integridad <span class="accent">académica</span></h2>
+    <div class="rule"></div>
+
+    <div class="body">
+      <div class="cards4">
+        <div class="pcard" style="border-left:3px solid var(--amber);">
+          <p class="key" style="color:var(--amber)"><span class="c">!</span> Verificación</p>
+          <p class="desc">La IA puede inventar datos y referencias.</p>
+        </div>
+        <div class="pcard" style="border-left:3px solid var(--green);">
+          <p class="key"><span class="c">!</span> Transparencia</p>
+          <p class="desc">Cita el uso de IA.</p>
+        </div>
+        <div class="pcard" style="border-left:3px solid var(--coral);">
+          <p class="key" style="color:var(--coral)"><span class="c">!</span> Privacidad</p>
+          <p class="desc">No subas datos sensibles o confidenciales.</p>
+        </div>
+        <div class="pcard" style="border-left:3px solid var(--blue);">
+          <p class="key" style="color:var(--blue)"><span class="c">!</span> Sesgos <span class="en" style="color:var(--blue);font-weight:400">(bias)</span></p>
+          <p class="desc">Los modelos reflejan los sesgos de sus datos.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- SLIDE 11 — EJERCICIO PRÁCTICO                                 -->
+  <!-- ============================================================= -->
+  <section class="slide" data-tab="ejercicio.sh">
+    <p class="prompt">
+      <span class="user">investigador</span><span class="at">@</span><span class="host">taller</span><span class="sym">:</span><span class="path">~</span><span class="sym">$</span>
+      <span class="cmd">./ejercicio.sh</span> <span class="flag">--start</span>
+    </p>
+    <p class="eyebrow"><span class="hash">#</span> 09 · Práctica</p>
+    <h2 class="heading" data-decode>Ejercicio <span class="accent">práctico</span></h2>
+    <div class="rule"></div>
+
+    <div class="body">
+      <p class="lead" style="font-size:clamp(24px,2.8vw,36px); max-width:30ch;">
+        <span style="color:var(--muted)">Instrucción:</span> Elige un <span class="g">paper</span> de tu área.
+      </p>
+
+      <ol class="steps">
+        <li>Resume su contribución con una herramienta.</li>
+        <li>Formula <span style="color:var(--blue)">3 preguntas críticas</span>.</li>
+        <li>Verifica una afirmación contra la fuente.</li>
+      </ol>
+
+      <p class="note green"><span class="lbl">META:</span> <b>15 minutos · en parejas</b></p>
+    </div>
+  </section>
+
+  <!-- ============================================================= -->
+  <!-- SLIDE 12 — RECURSOS Y CIERRE                                  -->
+  <!-- ============================================================= -->
+  <section class="slide" data-tab="cierre.md">
+    <p class="prompt">
+      <span class="user">investigador</span><span class="at">@</span><span class="host">taller</span><span class="sym">:</span><span class="path">~</span><span class="sym">$</span>
+      <span class="cmd">git</span> commit <span class="flag">-m</span> <span style="color:var(--coral)">"gracias :)"</span>
+    </p>
+    <p class="eyebrow"><span class="hash">#</span> 10 · Cierre</p>
+    <h2 class="heading" data-decode>Recursos y <span class="accent">cierre</span></h2>
+    <div class="rule"></div>
+
+    <div class="body">
+      <ul class="reslist">
+        <li><span class="pfx">&gt;</span> Diapositivas y guía de prompts: <span class="ph">[enlace]</span></li>
+        <li><span class="pfx">&gt;</span> Preguntas · <span style="color:var(--amber)">Q&amp;A</span></li>
+        <li><span class="pfx">&gt;</span> Gracias · <span class="ph">[correo de contacto]</span></li>
+      </ul>
+
+      <p style="margin-top:34px; font-size:clamp(18px,1.8vw,22px); color:var(--muted);">
+        <span class="user" style="color:var(--green)">investigador</span><span style="color:var(--muted)">@</span><span style="color:var(--blue)">taller</span><span style="color:var(--text)">:</span><span style="color:var(--amber)">~</span><span style="color:var(--text)">$</span>
+        <span class="cursor"></span>
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===================== ON-SCREEN UI CHROME ===================== -->
+<nav class="progress" id="progress" aria-label="Progreso de la presentación"></nav>
+
+<div class="counter" id="counter">
+  <span class="cur">01</span><span class="sep">/</span><span class="tot">12</span>
+</div>
+
+<div class="help" aria-hidden="true">
+  <span class="key">F</span> pantalla completa &nbsp;·&nbsp; <span class="key">&larr;</span><span class="key">&rarr;</span> navegar
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- references ---------- */
+  var slides   = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total    = slides.length;
+  var counter  = document.getElementById('counter');
+  var progress = document.getElementById('progress');
+  var flicker  = document.getElementById('flicker');
+  var tabNum   = document.getElementById('tabNum');
+  var tabName  = document.getElementById('tabName');
+  var stage    = document.getElementById('stage');
+
+  var reduceMotion = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var current = 0;
+  var typeTimer = null;
+
+  /* ---------- build clickable progress segments ---------- */
+  for(var i=0;i<total;i++){
+    (function(idx){
+      var seg = document.createElement('span');
+      seg.className = 'seg';
+      seg.setAttribute('role','button');
+      seg.setAttribute('tabindex','0');
+      seg.setAttribute('aria-label','Ir a diapositiva ' + (idx+1));
+      seg.addEventListener('click', function(){ go(idx); });
+      seg.addEventListener('keydown', function(e){
+        if(e.key==='Enter' || e.key===' '){ e.preventDefault(); go(idx); }
+      });
+      progress.appendChild(seg);
+    })(i);
+  }
+  var segs = Array.prototype.slice.call(progress.children);
+
+  /* ---------- helpers ---------- */
+  function pad(n){ return (n<10?'0':'') + n; }
+
+  function updateChrome(){
+    counter.querySelector('.cur').textContent = pad(current+1);
+    segs.forEach(function(s,idx){
+      s.classList.toggle('cur',  idx===current);
+      s.classList.toggle('done', idx<current);
+    });
+    // top tab filename + number
+    var tab = slides[current].getAttribute('data-tab') || 'slide';
+    tabNum.textContent = pad(current+1);
+    var dot = tab.lastIndexOf('.');
+    if(dot>0){
+      tabName.innerHTML = tab.slice(0,dot) +
+        '<span class="ext">' + tab.slice(dot) + '</span>';
+    } else {
+      tabName.textContent = tab;
+    }
+  }
+
+  /* ---------- typewriter / decode reveal for the heading ---------- */
+  var GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&*<>/\\{}[]_=+";
+
+  function clearType(){
+    if(typeTimer){ clearInterval(typeTimer); typeTimer = null; }
+  }
+
+  function decodeHeading(slide){
+    clearType();
+    var el = slide.querySelector('[data-decode]');
+    if(!el) return;
+
+    // cache the original rich HTML once
+    if(!el.dataset.full){ el.dataset.full = el.innerHTML; }
+    var fullHTML = el.dataset.full;
+
+    if(reduceMotion){
+      el.innerHTML = fullHTML;   // instant, no animation
+      return;
+    }
+
+    // Work on plain-text length but restore rich HTML at the end so
+    // accent <span> colors survive the reveal.
+    var tmp = document.createElement('div');
+    tmp.innerHTML = fullHTML;
+    var plain = tmp.textContent || "";
+    var n = plain.length;
+    var frame = 0;
+    var speed = Math.max(14, Math.min(34, Math.round(620 / n))); // adaptive
+
+    el.style.minHeight = el.offsetHeight + 'px'; // avoid reflow jump
+
+    typeTimer = setInterval(function(){
+      frame++;
+      var revealed = Math.floor(frame * (n / 26)); // ~26 frames total
+      var out = "";
+      for(var c=0;c<n;c++){
+        var ch = plain[c];
+        if(ch === ' '){ out += ' '; continue; }
+        if(c < revealed){ out += ch; }
+        else { out += GLYPHS[Math.floor(Math.random()*GLYPHS.length)]; }
+      }
+      el.textContent = out;
+      if(revealed >= n){
+        clearType();
+        el.innerHTML = fullHTML;      // restore colored spans
+        el.style.minHeight = '';
+      }
+    }, speed);
+  }
+
+  /* ---------- scanline flicker on transition ---------- */
+  function fireFlicker(){
+    if(reduceMotion) return;
+    flicker.classList.remove('fire');
+    // force reflow so the animation restarts every time
+    void flicker.offsetWidth;
+    flicker.classList.add('fire');
+  }
+
+  /* ---------- core navigation ---------- */
+  function go(idx, dir){
+    if(idx < 0) idx = 0;
+    if(idx > total-1) idx = total-1;
+    if(idx === current && slides[current].classList.contains('active')) return;
+
+    var prev = slides[current];
+    var next = slides[idx];
+
+    if(prev && prev !== next){
+      prev.classList.remove('active','anim');
+    }
+
+    current = idx;
+    next.classList.add('active');
+
+    if(!reduceMotion){
+      next.classList.remove('anim');
+      void next.offsetWidth;          // restart the enter animation
+      next.classList.add('anim');
+    }
+
+    fireFlicker();
+    updateChrome();
+    decodeHeading(next);
+
+    // keep URL hash in sync (handy for jumping/bookmarking)
+    try{ history.replaceState(null,'', '#' + (idx+1)); }catch(e){}
+  }
+
+  function next(){ go(current+1); }
+  function prev(){ go(current-1); }
+
+  /* ---------- keyboard ---------- */
+  document.addEventListener('keydown', function(e){
+    switch(e.key){
+      case 'ArrowRight':
+      case 'PageDown':
+        e.preventDefault(); next(); break;
+      case ' ':
+      case 'Spacebar': // legacy
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft':
+      case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home':
+        e.preventDefault(); go(0); break;
+      case 'End':
+        e.preventDefault(); go(total-1); break;
+      case 'f':
+      case 'F':
+        e.preventDefault(); toggleFullscreen(); break;
+      default: break;
+    }
+  });
+
+  /* ---------- click zones: right ~60% next, left ~40% prev ---------- */
+  stage.addEventListener('click', function(e){
+    // ignore clicks on interactive chrome (none inside stage, but be safe)
+    if(e.target.closest('a,button,[role="button"]')) return;
+    var x = e.clientX / window.innerWidth;
+    if(x > 0.40){ next(); } else { prev(); }
+  });
+
+  /* ---------- touch swipe ---------- */
+  var tsx = 0, tsy = 0, touching = false;
+  document.addEventListener('touchstart', function(e){
+    if(e.touches.length!==1) return;
+    touching = true;
+    tsx = e.touches[0].clientX; tsy = e.touches[0].clientY;
+  }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    if(!touching) return; touching = false;
+    var t = e.changedTouches[0];
+    var dx = t.clientX - tsx;
+    var dy = t.clientY - tsy;
+    if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)*1.4){
+      if(dx < 0){ next(); } else { prev(); }
+    }
+  }, {passive:true});
+
+  /* ---------- fullscreen ---------- */
+  function toggleFullscreen(){
+    var d = document;
+    var el = d.documentElement;
+    if(!d.fullscreenElement && !d.webkitFullscreenElement){
+      if(el.requestFullscreen) el.requestFullscreen();
+      else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    } else {
+      if(d.exitFullscreen) d.exitFullscreen();
+      else if(d.webkitExitFullscreen) d.webkitExitFullscreen();
+    }
+  }
+
+  /* ---------- init (respect #hash deep-link) ---------- */
+  var startIdx = 0;
+  var h = parseInt((location.hash||'').replace('#',''),10);
+  if(!isNaN(h) && h>=1 && h<=total){ startIdx = h-1; }
+
+  current = startIdx;
+  slides[startIdx].classList.add('active');
+  if(!reduceMotion) slides[startIdx].classList.add('anim');
+  updateChrome();
+  decodeHeading(slides[startIdx]);
+
+})();
+</script>
+</body>
+</html>
