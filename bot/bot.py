@@ -28,6 +28,15 @@ def _load_config() -> Config:
     return Config.from_env(env)
 
 
+def _load_token() -> str:
+    env = {**dotenv_values(REPO_ROOT / ".env"), **dotenv_values(REPO_ROOT / "bot" / ".env")}
+    token = env.get("TELEGRAM_TOKEN")
+    if not token:
+        log.error("No TELEGRAM_TOKEN found. Copy bot/.env.example to .env and set TELEGRAM_TOKEN.")
+        sys.exit(1)
+    return token
+
+
 async def _print_ids(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     m = update.effective_message
     if m and update.effective_user:
@@ -95,18 +104,18 @@ class _CallableSender:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--print-ids", action="store_true",
-                        help="Log chat_id/user_id of every message and exit-less run (for setup).")
+                        help="Log chat_id/user_id of every message (for setup).")
     args = parser.parse_args()
 
-    cfg = _load_config()
-    app = Application.builder().token(cfg.telegram_token).build()
-
     if args.print_ids:
+        app = Application.builder().token(_load_token()).build()
         app.add_handler(MessageHandler(filters.ALL, _print_ids))
         log.info("ID helper mode: send a message in your group. Ctrl-C to stop.")
         app.run_polling()
         return
 
+    cfg = _load_config()
+    app = Application.builder().token(cfg.telegram_token).build()
     handler = _build_handler(cfg)
     app.bot_data["cfg"] = cfg
     app.bot_data["handler"] = handler
