@@ -30,6 +30,9 @@ SPANISH_INSTRUCTIONS = (
     "recuerda verificar fuentes y resultados.\n"
     "- Basa tus respuestas en el material del taller que aparece abajo; si algo no está cubierto, dilo.\n"
     "- Si te comparten una captura de pantalla (error, terminal, UI), interprétala y ayuda a resolver.\n"
+    "- Formato: usa Markdown sencillo. Para código, SIEMPRE usa bloques con lenguaje "
+    "(por ejemplo ```bash\\n...\\n``` o ```python\\n...\\n```); para comandos o nombres "
+    "cortos usa `código en línea`; usa **negrita** con moderación. Evita tablas y encabezados.\n"
     "- Comienza SIEMPRE tu respuesta con el nombre de quien pregunta (te lo indican en el mensaje)."
 )
 
