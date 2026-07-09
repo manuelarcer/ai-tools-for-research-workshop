@@ -175,6 +175,8 @@ Make a throwaway private group with just you and the bot, then walk this checkli
 
 - [ ] Attendee text question → bot replies in Spanish, prefixed with the name.
 - [ ] Post a screenshot (e.g. a terminal error) → bot interprets the image.
+- [ ] Ask something whose answer includes code → **bold** renders bold and code shows as a
+      monospace block with a copy button (not raw `**` / backticks).
 - [ ] Post "gracias" / an emoji → bot stays silent.
 - [ ] Post as the host (you) *without* naming the bot → bot stays silent.
 - [ ] @-mention the bot as the host → bot replies.

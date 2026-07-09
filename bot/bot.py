@@ -10,6 +10,7 @@ from telegram.ext import Application, MessageHandler, filters, ContextTypes
 from bot.config import Config
 from bot.grounding import load_grounding, build_system
 from bot.claude_client import ClaudeClient
+from bot.formatting import render_html
 from bot.gate import IncomingMessage, RateLimiter
 from bot.memory import RecentQA
 from bot.handler import Handler
@@ -102,8 +103,18 @@ async def _on_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     )
 
     async def send(reply_text: str, reply_to_message_id: int) -> int:
-        sent = await context.bot.send_message(
-            chat_id=tg_msg.chat_id, text=reply_text[:4096], reply_to_message_id=reply_to_message_id)
+        # Render the model's Markdown as Telegram HTML (bold, code blocks, ...).
+        # If Telegram rejects the HTML, fall back to plain text so the answer
+        # always gets through.
+        try:
+            sent = await context.bot.send_message(
+                chat_id=tg_msg.chat_id, text=render_html(reply_text)[:4096],
+                reply_to_message_id=reply_to_message_id, parse_mode="HTML")
+        except Exception:
+            log.warning("HTML send failed; retrying as plain text")
+            sent = await context.bot.send_message(
+                chat_id=tg_msg.chat_id, text=reply_text[:4096],
+                reply_to_message_id=reply_to_message_id)
         return sent.message_id
 
     handler.sender = _CallableSender(send)
