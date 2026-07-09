@@ -187,9 +187,11 @@ Make a throwaway private group with just you and the bot, then walk this checkli
 ## What the bot knows (grounding)
 
 At startup the bot loads a set of workshop files into its context so its answers match
-what you taught. The file list is at the top of **`bot/grounding.py`**
-(`GROUNDING_FILES` and `SLIDE_HTML`). Missing files are skipped with a warning, so you can
-add or swap documents as your materials are finalized — just update that list.
+what you taught. **You choose those files by editing a plain list — no code:**
+open **`bot/grounding_files.txt`** and add/remove/reorder paths (one per line, relative to
+the repo root; `#` lines are comments). `.html` files are auto-stripped to text; everything
+else is read as-is. Missing files are skipped with a startup warning, so you can list
+documents now and add them later as your materials are finalized.
 
 ---
 
@@ -203,4 +205,4 @@ add or swap documents as your materials are finalized — just update that list.
 | Bot replies in the wrong/another chat, or not at all | Confirm `GROUP_ID` matches the group (re-run `--print-ids`). The bot only serves that one group. |
 | `--print-ids` shows nothing | Make sure the bot is **in** the group and you actually sent a message there. |
 | Import or "module not found" errors | Activate the venv (`source .venv/bin/activate`) and re-run `pip install -r bot/requirements.txt`. |
-| Answers seem generic / ignore the workshop | Check `bot/grounding.py` points at real files; warnings about "Grounding file not found" appear at startup. |
+| Answers seem generic / ignore the workshop | Check the paths in `bot/grounding_files.txt` exist; "Grounding file not found" warnings appear at startup for any that don't. |

@@ -6,15 +6,19 @@ from pathlib import Path
 
 log = logging.getLogger(__name__)
 
-# Files pulled into the grounding context, relative to repo root.
-GROUNDING_FILES = [
+# Plain-text list (one path per line, relative to repo root) of the files the
+# bot loads as grounding. Edit that file to choose documents — no code change.
+GROUNDING_LIST_FILE = "bot/grounding_files.txt"
+
+# Used only if bot/grounding_files.txt is missing, so the bot still has context.
+_DEFAULT_FILES = [
     "README.md",
     "docs/workshop-plan.md",
     "docs/workshop-ai-tools-for-research.md",
     "exercise/beer-lambert/README.md",
     "exercise/beer-lambert/SKILL.md.template",
+    "index.html",
 ]
-SLIDE_HTML = "index.html"
 
 SPANISH_INSTRUCTIONS = (
     "Eres un asistente del taller 'Inteligencia Artificial para la Investigación'. "
@@ -41,20 +45,36 @@ def extract_slide_text(html: str) -> str:
     return _WS_RE.sub(" ", unescaped).strip()
 
 
+def read_grounding_list(repo_root: Path) -> list[str]:
+    """Return the grounding file paths from bot/grounding_files.txt.
+
+    Strips ``#`` comments and blank lines. Falls back to a built-in default
+    list (with a warning) if the list file is absent.
+    """
+    list_path = repo_root / GROUNDING_LIST_FILE
+    if not list_path.exists():
+        log.warning("Grounding list %s not found; using built-in defaults.", GROUNDING_LIST_FILE)
+        return list(_DEFAULT_FILES)
+    files: list[str] = []
+    for raw in list_path.read_text(encoding="utf-8").splitlines():
+        line = raw.split("#", 1)[0].strip()
+        if line:
+            files.append(line)
+    return files
+
+
 def load_grounding(repo_root: Path) -> str:
     parts: list[str] = []
-    for rel in GROUNDING_FILES:
+    for rel in read_grounding_list(repo_root):
         p = repo_root / rel
-        if p.exists():
-            parts.append(f"## {rel}\n{p.read_text(encoding='utf-8')}")
-        else:
+        if not p.exists():
             log.warning("Grounding file not found, skipping: %s", rel)
-    deck = repo_root / SLIDE_HTML
-    if deck.exists():
-        parts.append(f"## {SLIDE_HTML} (texto de las diapositivas)\n"
-                     + extract_slide_text(deck.read_text(encoding="utf-8")))
-    else:
-        log.warning("Grounding file not found, skipping: %s", SLIDE_HTML)
+            continue
+        content = p.read_text(encoding="utf-8")
+        if rel.lower().endswith((".html", ".htm")):
+            parts.append(f"## {rel} (texto)\n{extract_slide_text(content)}")
+        else:
+            parts.append(f"## {rel}\n{content}")
     return "\n\n".join(parts)
 
 
