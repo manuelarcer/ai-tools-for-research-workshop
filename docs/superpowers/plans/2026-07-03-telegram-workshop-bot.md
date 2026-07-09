@@ -355,8 +355,7 @@ def test_answers_host_when_mentioned():
     assert should_respond(msg(user_id=42, mentions_bot=True), CFG).respond is True
 
 def test_ignores_trivial_ack():
-    assert should_respond(msg(text="gracias")).respond is False if False else \
-        should_respond(msg(text="gracias"), CFG).respond is False
+    assert should_respond(msg(text="gracias"), CFG).respond is False
 
 def test_ignores_emoji_only():
     assert should_respond(msg(text="👍👍"), CFG).respond is False
