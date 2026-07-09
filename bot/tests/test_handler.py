@@ -68,3 +68,17 @@ async def test_escalation_failure_falls_back_to_sonnet():
     await h.handle(imsg(), 300)
     await asyncio.gather(*h._tasks)
     assert sender.send.await_args_list[-1].args[0] == "Ana: base"   # fell back
+
+@pytest.mark.asyncio
+async def test_escalation_delivery_failure_is_contained():
+    client = AsyncMock()
+    client.answer = AsyncMock(return_value=Answer("Ana: base", True))
+    client.escalate = AsyncMock(return_value="Ana: respuesta Opus")
+    sender = AsyncMock()
+    # interim send ok, final delivery raises
+    sender.send = AsyncMock(side_effect=[900, RuntimeError("telegram down")])
+    h = make(client, sender)
+    await h.handle(imsg(), source_message_id=300)
+    # must not raise even though final delivery failed inside the background task
+    await asyncio.gather(*h._tasks)
+    assert client.escalate.await_count == 1

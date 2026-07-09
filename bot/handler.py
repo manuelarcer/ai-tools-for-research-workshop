@@ -57,7 +57,10 @@ class Handler:
         except Exception:
             log.exception("Opus escalation failed; falling back to Sonnet answer")
             final = base.text
-        await self._deliver(msg, source_message_id, final)
+        try:
+            await self._deliver(msg, source_message_id, final)
+        except Exception:
+            log.exception("Failed to deliver escalated answer to chat")
 
     async def _deliver(self, msg: IncomingMessage, source_message_id: int, text: str) -> None:
         sent_id = await self.sender.send(text, source_message_id)
