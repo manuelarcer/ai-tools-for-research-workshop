@@ -1,17 +1,20 @@
 from __future__ import annotations
 import html as html_lib
+import logging
 import re
 from pathlib import Path
+
+log = logging.getLogger(__name__)
 
 # Files pulled into the grounding context, relative to repo root.
 GROUNDING_FILES = [
     "README.md",
     "docs/workshop-plan.md",
+    "docs/workshop-ai-tools-for-research.md",
     "exercise/beer-lambert/README.md",
     "exercise/beer-lambert/SKILL.md.template",
-    "slide-deck-handoff.md",
 ]
-SLIDE_HTML = "taller-ia-alt3-terminal.html"
+SLIDE_HTML = "index.html"
 
 SPANISH_INSTRUCTIONS = (
     "Eres un asistente del taller 'Inteligencia Artificial para la Investigación'. "
@@ -44,10 +47,14 @@ def load_grounding(repo_root: Path) -> str:
         p = repo_root / rel
         if p.exists():
             parts.append(f"## {rel}\n{p.read_text(encoding='utf-8')}")
+        else:
+            log.warning("Grounding file not found, skipping: %s", rel)
     deck = repo_root / SLIDE_HTML
     if deck.exists():
         parts.append(f"## {SLIDE_HTML} (texto de las diapositivas)\n"
                      + extract_slide_text(deck.read_text(encoding="utf-8")))
+    else:
+        log.warning("Grounding file not found, skipping: %s", SLIDE_HTML)
     return "\n\n".join(parts)
 
 

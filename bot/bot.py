@@ -25,7 +25,11 @@ def _load_config() -> Config:
     if not env:
         log.error("No .env found. Copy bot/.env.example to .env and fill it in.")
         sys.exit(1)
-    return Config.from_env(env)
+    try:
+        return Config.from_env(env)
+    except KeyError as e:
+        log.error("Missing required .env key: %s", e.args[0])
+        sys.exit(1)
 
 
 def _load_token() -> str:
@@ -42,6 +46,10 @@ async def _print_ids(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     if m and update.effective_user:
         log.info("chat_id=%s user_id=%s name=%s text=%r",
                  m.chat_id, update.effective_user.id, update.effective_user.first_name, m.text)
+
+
+async def _on_error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    log.error("Unhandled error in update processing", exc_info=context.error)
 
 
 def _build_handler(cfg: Config) -> Handler:
@@ -70,10 +78,18 @@ async def _on_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     )
 
     images: list[bytes] = []
+    image_failed = False
     if tg_msg.photo:
-        photo = tg_msg.photo[-1]            # largest size
-        tg_file = await context.bot.get_file(photo.file_id)
-        images.append(bytes(await tg_file.download_as_bytearray()))
+        try:
+            photo = tg_msg.photo[-1]            # largest size
+            tg_file = await context.bot.get_file(photo.file_id)
+            images.append(bytes(await tg_file.download_as_bytearray()))
+        except Exception:
+            log.exception("Failed to download photo; answering text-only")
+            image_failed = True
+
+    if image_failed:
+        text = (text + "\n[No pude leer la imagen adjunta.]").strip()
 
     imsg = IncomingMessage(
         user_id=user.id,
@@ -87,7 +103,7 @@ async def _on_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     async def send(reply_text: str, reply_to_message_id: int) -> int:
         sent = await context.bot.send_message(
-            chat_id=tg_msg.chat_id, text=reply_text, reply_to_message_id=reply_to_message_id)
+            chat_id=tg_msg.chat_id, text=reply_text[:4096], reply_to_message_id=reply_to_message_id)
         return sent.message_id
 
     handler.sender = _CallableSender(send)
@@ -119,7 +135,10 @@ def main() -> None:
     handler = _build_handler(cfg)
     app.bot_data["cfg"] = cfg
     app.bot_data["handler"] = handler
-    app.add_handler(MessageHandler((filters.TEXT | filters.PHOTO) & ~filters.COMMAND, _on_message))
+    app.add_handler(MessageHandler(
+        (filters.TEXT | filters.PHOTO) & ~filters.COMMAND & filters.Chat(cfg.group_id),
+        _on_message))
+    app.add_error_handler(_on_error)
     log.info("Bot running. Group allowlist=%s host=%s", cfg.group_id, cfg.host_user_id)
     app.run_polling()
 

@@ -28,3 +28,11 @@ def test_build_system_marks_grounding_cacheable():
     assert blocks[0]["text"] == SPANISH_INSTRUCTIONS
     assert blocks[1]["text"] == "GROUNDING"
     assert blocks[1]["cache_control"] == {"type": "ephemeral"}
+
+def test_load_grounding_warns_on_missing_file(tmp_path, caplog):
+    import logging
+    (tmp_path / "README.md").write_text("body", encoding="utf-8")
+    with caplog.at_level(logging.WARNING):
+        load_grounding(tmp_path)
+    assert any("README.md" not in r.getMessage() and "not found" in r.getMessage()
+               for r in caplog.records)   # e.g. docs/workshop-plan.md missing warned

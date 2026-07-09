@@ -82,3 +82,21 @@ async def test_escalation_delivery_failure_is_contained():
     # must not raise even though final delivery failed inside the background task
     await asyncio.gather(*h._tasks)
     assert client.escalate.await_count == 1
+
+@pytest.mark.asyncio
+async def test_answer_call_failure_sends_error_note():
+    client = AsyncMock()
+    client.answer = AsyncMock(side_effect=RuntimeError("anthropic down"))
+    sender = AsyncMock(); sender.send = AsyncMock(return_value=1)
+    h = make(client, sender)
+    await h.handle(imsg(), source_message_id=10)      # must not raise
+    sender.send.assert_awaited_once()                  # Spanish error note posted
+    assert h.memory.recent() == []                     # nothing remembered on failure
+
+@pytest.mark.asyncio
+async def test_direct_delivery_failure_is_contained():
+    client = AsyncMock()
+    client.answer = AsyncMock(return_value=Answer("Ana: x", False))
+    sender = AsyncMock(); sender.send = AsyncMock(side_effect=RuntimeError("telegram down"))
+    h = make(client, sender)
+    await h.handle(imsg(), 10)                          # must not raise

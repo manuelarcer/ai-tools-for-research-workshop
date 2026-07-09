@@ -12,6 +12,8 @@ log = logging.getLogger(__name__)
 
 _INTERIM = ("{name}: buena pregunta, la escalo a un modelo más potente (Opus) "
             "y te respondo en un momento.")
+_ERROR_ES = ("{name}: tuve un problema técnico al generar la respuesta. "
+             "Por favor intenta de nuevo en un momento.")
 _SUMMARY_LEN = 200
 
 
@@ -31,6 +33,12 @@ class Handler:
         self.now_fn = now_fn
         self._tasks: set[asyncio.Task] = set()
 
+    async def _safe_send(self, text: str, reply_to_message_id: int) -> None:
+        try:
+            await self.sender.send(text, reply_to_message_id)
+        except Exception:
+            log.exception("Failed to send message to chat")
+
     async def handle(self, msg: IncomingMessage, source_message_id: int,
                      images: list[bytes] | None = None) -> None:
         images = images or []
@@ -38,15 +46,23 @@ class Handler:
             return
         if not self.rate_limiter.allow(msg.user_id, self.now_fn()):
             return
-        answer = await self.client.answer(msg.text, images, self.memory)
+        try:
+            answer = await self.client.answer(msg.text, images, self.memory)
+        except Exception:
+            log.exception("Answer generation failed")
+            await self._safe_send(_ERROR_ES.format(name=msg.first_name), source_message_id)
+            return
         if answer.escalate:
-            await self.sender.send(_INTERIM.format(name=msg.first_name), source_message_id)
+            await self._safe_send(_INTERIM.format(name=msg.first_name), source_message_id)
             task = asyncio.create_task(
                 self._finish_escalation(msg, source_message_id, images, answer))
             self._tasks.add(task)
             task.add_done_callback(self._tasks.discard)
         else:
-            await self._deliver(msg, source_message_id, answer.text)
+            try:
+                await self._deliver(msg, source_message_id, answer.text)
+            except Exception:
+                log.exception("Failed to deliver answer")
 
     async def _finish_escalation(self, msg: IncomingMessage, source_message_id: int,
                                  images: list[bytes], base: Answer) -> None:
