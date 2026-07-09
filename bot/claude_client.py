@@ -1,8 +1,11 @@
 from __future__ import annotations
 import base64
+import logging
 from dataclasses import dataclass
 from anthropic import AsyncAnthropic
 from bot.memory import RecentQA
+
+log = logging.getLogger(__name__)
 
 _SUBMIT_TOOL = {
     "name": "submit_answer",
@@ -20,6 +23,8 @@ _SUBMIT_TOOL = {
     },
 }
 _MAX_TOKENS = 1024
+_FALLBACK_ES = ("No pude generar una respuesta con el modelo base; "
+                "lo intento con un modelo más potente.")
 
 
 @dataclass
@@ -67,8 +72,9 @@ class ClaudeClient:
             if getattr(block, "type", None) == "tool_use" and block.name == "submit_answer":
                 data = block.input
                 return Answer(text=data["answer"], escalate=bool(data["escalate"]))
-        # Defensive fallback: no tool block -> treat as non-escalated empty
-        return Answer(text="", escalate=False)
+        # No submit_answer tool_use block -> recover by escalating to Opus.
+        log.warning("No submit_answer tool_use block in Sonnet response; escalating.")
+        return Answer(text=_FALLBACK_ES, escalate=True)
 
     async def escalate(self, question_text: str, images: list[bytes], recent: RecentQA) -> str:
         content = build_user_content(question_text, images, recent)

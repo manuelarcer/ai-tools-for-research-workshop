@@ -42,6 +42,20 @@ async def test_answer_parses_tool_output():
     kwargs = client._client.messages.create.call_args.kwargs
     assert kwargs["model"] == "sonnet-x"
     assert kwargs["tool_choice"]["name"] == "submit_answer"
+    assert kwargs["system"] == [{"type": "text", "text": "s"}]
+
+
+@pytest.mark.asyncio
+async def test_answer_without_tool_block_escalates():
+    block = MagicMock(); block.type = "text"; block.text = "no tool here"
+    resp = MagicMock(); resp.content = [block]
+    client = ClaudeClient("k", "sonnet-x", "opus-x", system_blocks=[{"type": "text", "text": "s"}])
+    client._client = MagicMock()
+    client._client.messages = MagicMock()
+    client._client.messages.create = AsyncMock(return_value=resp)
+    ans = await client.answer("¿algo?", [], RecentQA())
+    assert ans.escalate is True
+    assert ans.text                      # non-empty fallback, not blank
 
 
 @pytest.mark.asyncio
@@ -54,4 +68,6 @@ async def test_escalate_uses_opus_and_returns_text():
     client._client.messages.create = AsyncMock(return_value=resp)
     out = await client.escalate("¿pregunta difícil?", [], RecentQA())
     assert out == "respuesta Opus"
-    assert client._client.messages.create.call_args.kwargs["model"] == "opus-x"
+    kwargs = client._client.messages.create.call_args.kwargs
+    assert kwargs["model"] == "opus-x"
+    assert kwargs["system"] == [{"type": "text", "text": "s"}]
