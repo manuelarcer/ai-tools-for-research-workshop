@@ -1,4 +1,8 @@
 .DS_Store
 *.log
 /screenshots/
+.env
+__pycache__/
+.pytest_cache/
 
+.venv/

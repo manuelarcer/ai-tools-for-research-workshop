@@ -1,0 +1,17 @@
+# Files the workshop bot reads as context ("grounding"), so its answers match
+# what you taught. One path per line, relative to the repo root.
+#
+# - Lines starting with # are comments; blank lines are ignored.
+# - .html files are stripped to plain text automatically; everything else is
+#   read as-is (markdown, txt, templates).
+# - A listed file that doesn't exist is skipped with a warning at startup, so
+#   you can add documents here as your workshop materials are finalized.
+#
+# Edit this list freely — no code changes needed.
+
+README.md
+docs/workshop-plan.md
+docs/workshop-ai-tools-for-research.md
+exercise/beer-lambert/README.md
+exercise/beer-lambert/SKILL.md.template
+index.html
