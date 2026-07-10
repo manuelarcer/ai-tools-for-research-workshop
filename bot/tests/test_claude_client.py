@@ -18,6 +18,17 @@ def test_build_user_content_includes_memory_and_images():
     assert any("cómo instalo" in b["text"] for b in content if b["type"] == "text")
 
 
+def test_build_user_content_includes_user_history_when_given():
+    content = build_user_content("otra vez", [], RecentQA(), user_history="hist: intento previo")
+    assert any("intento previo" in b["text"] for b in content if b["type"] == "text")
+
+
+def test_build_user_content_omits_empty_user_history():
+    content = build_user_content("hola", [], RecentQA())     # no user_history
+    text_blocks = [b["text"] for b in content if b["type"] == "text"]
+    assert text_blocks == ["Pregunta:\nhola"]                # only the question block
+
+
 def _tool_response(answer, escalate):
     block = MagicMock()
     block.type = "tool_use"

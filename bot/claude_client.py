@@ -22,7 +22,10 @@ _SUBMIT_TOOL = {
                     "de verdad no puedas dar una respuesta correcta y útil por ti mismo "
                     "(por ejemplo un problema muy especializado y ambiguo donde una "
                     "respuesta equivocada sería perjudicial). Ante cualquier duda, "
-                    "responde tú mismo con false. Escalar es caro y lento."
+                    "responde tú mismo con false. Escalar es caro y lento. "
+                    "TAMBIÉN pon true si, según los mensajes recientes de este mismo "
+                    "usuario, ya te ha preguntado sobre el MISMO problema sin resolver "
+                    "unas 3 veces y tus respuestas anteriores no lo han solucionado."
                 ),
             },
         },
@@ -40,11 +43,14 @@ class Answer:
     escalate: bool
 
 
-def build_user_content(question_text: str, images: list[bytes], recent: RecentQA) -> list[dict]:
+def build_user_content(question_text: str, images: list[bytes], recent: RecentQA,
+                       user_history: str = "") -> list[dict]:
     content: list[dict] = []
     mem = recent.render_for_prompt()
     if mem:
         content.append({"type": "text", "text": mem})
+    if user_history:
+        content.append({"type": "text", "text": user_history})
     content.append({"type": "text", "text": f"Pregunta:\n{question_text}"})
     for raw in images:
         content.append({
@@ -65,8 +71,9 @@ class ClaudeClient:
         self.model_escalate = model_escalate
         self.system_blocks = system_blocks
 
-    async def answer(self, question_text: str, images: list[bytes], recent: RecentQA) -> Answer:
-        content = build_user_content(question_text, images, recent)
+    async def answer(self, question_text: str, images: list[bytes], recent: RecentQA,
+                     user_history: str = "") -> Answer:
+        content = build_user_content(question_text, images, recent, user_history)
         resp = await self._client.messages.create(
             model=self.model_default,
             max_tokens=_MAX_TOKENS,

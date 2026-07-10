@@ -24,8 +24,8 @@ _BOLD_ALT_RE = re.compile(r"__(.+?)__", re.DOTALL)
 # *italic* / _italic_ (avoid matching bold markers and word-internal underscores)
 _ITALIC_STAR_RE = re.compile(r"(?<![\*\w])\*(?!\s)([^*\n]+?)(?<!\s)\*(?![\*\w])")
 _ITALIC_US_RE = re.compile(r"(?<![_\w])_(?!\s)([^_\n]+?)(?<!\s)_(?![_\w])")
-# [text](url)
-_LINK_RE = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")
+# [text](url) — http(s) links, plus tg://user?id=N for host mentions
+_LINK_RE = re.compile(r"\[([^\]]+)\]\(((?:https?://|tg://user\?id=)[^)\s]+)\)")
 
 _SENTINEL = "\x00{}\x00"
 
