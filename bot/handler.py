@@ -82,11 +82,17 @@ class Handler:
             task.add_done_callback(self._tasks.discard)
         elif not state.handed_off:
             # Tier 3: Opus ceiling reached and still stuck -> hand off to the host once.
+            # Latch first so a concurrent message can't double-ping; if the ping send
+            # fails, unlatch so the next message retries (never leave the host un-pinged).
             state.handed_off = True
             await self._deliver_safe(msg, source_message_id, answer.text)
-            await self._safe_send(
-                _HANDOFF_ES.format(name=msg.first_name, host_id=self.cfg.host_user_id),
-                source_message_id)
+            try:
+                await self.sender.send(
+                    _HANDOFF_ES.format(name=msg.first_name, host_id=self.cfg.host_user_id),
+                    source_message_id)
+            except Exception:
+                state.handed_off = False
+                log.exception("Failed to send host handoff ping; will retry next message")
         else:
             # Already handed off this episode: answer with Sonnet, don't re-ping the host.
             await self._deliver_safe(msg, source_message_id, answer.text)

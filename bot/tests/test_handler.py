@@ -180,3 +180,54 @@ async def test_after_handoff_only_answers_no_reping():
     client.escalate.assert_not_awaited()
     sender.send.assert_awaited_once_with("Ana: base", 300)   # answer only, no ping
 
+
+@pytest.mark.asyncio
+async def test_full_ladder_0_1_2_then_handoff():
+    # Drive the real progression through repeated handle() calls with an advancing clock.
+    client = AsyncMock()
+    client.answer = AsyncMock(return_value=Answer("Ana: base", True))   # always flags stuck
+    client.escalate = AsyncMock(return_value="Ana: opus")
+    sender = AsyncMock(); sender.send = AsyncMock(return_value=1)
+    clock = {"t": 100.0}
+    us = UserStates()
+    h = make(client, sender, now=lambda: clock["t"], user_states=us)
+    await h.handle(imsg(), 1); clock["t"] += 10          # opus #1
+    await h.handle(imsg(), 2); clock["t"] += 10          # opus #2
+    await asyncio.gather(*h._tasks)
+    st = us.get(7, now=clock["t"])
+    assert client.escalate.await_count == 2
+    assert st.opus_calls == 2 and st.handed_off is False
+    await h.handle(imsg(), 3)                             # ceiling -> handoff, no 3rd opus
+    assert client.escalate.await_count == 2
+    assert st.handed_off is True
+    assert any("tg://user?id=42" in c.args[0] for c in sender.send.await_args_list)
+
+
+@pytest.mark.asyncio
+async def test_window_reset_reenables_escalation():
+    client = AsyncMock()
+    client.answer = AsyncMock(return_value=Answer("Ana: base", True))
+    client.escalate = AsyncMock(return_value="Ana: opus")
+    sender = AsyncMock(); sender.send = AsyncMock(return_value=1)
+    us = UserStates()
+    st = us.get(7, now=100.0); st.opus_calls = 2; st.handed_off = True
+    # next message arrives well past the 20-min window -> fresh record, Opus re-enabled
+    h = make(client, sender, now=lambda: 100.0 + 20 * 60 + 100, user_states=us)
+    await h.handle(imsg(), 1)
+    await asyncio.gather(*h._tasks)
+    client.escalate.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_handoff_ping_failure_allows_retry():
+    client = AsyncMock()
+    client.answer = AsyncMock(return_value=Answer("Ana: base", True))
+    client.escalate = AsyncMock()
+    sender = AsyncMock()
+    sender.send = AsyncMock(side_effect=[555, RuntimeError("ping failed")])  # deliver ok, ping raises
+    us = UserStates()
+    us.get(7, now=100.0).opus_calls = 2
+    h = make(client, sender, user_states=us)
+    await h.handle(imsg(), 300)                          # must not raise
+    assert us.get(7, now=100.0).handed_off is False      # unlatched -> will retry next message
+

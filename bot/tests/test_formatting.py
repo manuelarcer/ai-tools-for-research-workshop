@@ -49,6 +49,12 @@ def test_tg_user_mention_link():
     assert out == 'avisé a <a href="tg://user?id=42">el instructor</a>'
 
 
+def test_non_whitelisted_url_schemes_are_not_linked():
+    # only http(s) and tg://user?id= may become links
+    for bad in ["[x](tg://resolve?domain=evil)", "[x](javascript:alert(1))", "[x](ftp://h/f)"]:
+        assert "<a" not in render_html(bad)
+
+
 def test_plain_text_passthrough():
     assert render_html("solo texto normal, sin formato.") == "solo texto normal, sin formato."
 
