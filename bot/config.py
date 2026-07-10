@@ -3,6 +3,10 @@ from dataclasses import dataclass
 from typing import Mapping
 
 
+def _parse_bool(value: str) -> bool:
+    return value.strip().lower() not in ("false", "0", "no", "off", "")
+
+
 @dataclass
 class Config:
     telegram_token: str
@@ -12,6 +16,7 @@ class Config:
     model_default: str = "claude-sonnet-5"
     model_escalate: str = "claude-opus-4-8"
     cooldown_seconds: float = 8.0
+    escalation_enabled: bool = True
 
     @classmethod
     def from_env(cls, env: Mapping[str, str]) -> "Config":
@@ -23,4 +28,5 @@ class Config:
             model_default=env.get("MODEL_DEFAULT", "claude-sonnet-5"),
             model_escalate=env.get("MODEL_ESCALATE", "claude-opus-4-8"),
             cooldown_seconds=float(env.get("COOLDOWN_SECONDS", "8")),
+            escalation_enabled=_parse_bool(env.get("ESCALATION_ENABLED", "true")),
         )
