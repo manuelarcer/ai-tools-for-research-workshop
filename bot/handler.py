@@ -52,7 +52,7 @@ class Handler:
             log.exception("Answer generation failed")
             await self._safe_send(_ERROR_ES.format(name=msg.first_name), source_message_id)
             return
-        if answer.escalate:
+        if answer.escalate and self.cfg.escalation_enabled:
             await self._safe_send(_INTERIM.format(name=msg.first_name), source_message_id)
             task = asyncio.create_task(
                 self._finish_escalation(msg, source_message_id, images, answer))

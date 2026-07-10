@@ -9,13 +9,29 @@ from bot.handler import Handler
 
 CFG = Config("t", "k", group_id=-100, host_user_id=42, cooldown_seconds=5.0)
 
-def make(handler_client, sender, now=lambda: 100.0):
-    return Handler(CFG, handler_client, RecentQA(), RateLimiter(5.0), sender, now_fn=now)
+def make(handler_client, sender, now=lambda: 100.0, cfg=CFG):
+    return Handler(cfg, handler_client, RecentQA(), RateLimiter(5.0), sender, now_fn=now)
 
 def imsg(**kw):
     base = dict(user_id=7, first_name="Ana", text="¿cómo?", has_image=False,
                 mentions_bot=False, is_from_bot=False, chat_id=-100)
     base.update(kw); return IncomingMessage(**base)
+
+@pytest.mark.asyncio
+async def test_escalation_disabled_delivers_sonnet_answer_directly():
+    # cfg with escalation off: even if Sonnet flags escalate, no Opus call, no interim
+    cfg_off = Config("t", "k", group_id=-100, host_user_id=42, cooldown_seconds=5.0,
+                     escalation_enabled=False)
+    client = AsyncMock()
+    client.answer = AsyncMock(return_value=Answer("Ana: respuesta base", True))  # escalate=True
+    client.escalate = AsyncMock()
+    sender = AsyncMock(); sender.send = AsyncMock(return_value=777)
+    h = make(client, sender, cfg=cfg_off)
+    await h.handle(imsg(), source_message_id=200)
+    sender.send.assert_awaited_once_with("Ana: respuesta base", 200)   # Sonnet answer, once
+    client.escalate.assert_not_awaited()                               # Opus never called
+    assert not h._tasks                                                # no background task
+    assert h.memory.recent()[-1].message_id == 777
 
 @pytest.mark.asyncio
 async def test_simple_answer_sends_and_remembers():

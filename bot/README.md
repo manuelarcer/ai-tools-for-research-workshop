@@ -69,9 +69,13 @@ This is what lets the bot call Claude (the model that writes the answers).
 3. Copy the key (starts with `sk-ant-...`). This is your `ANTHROPIC_API_KEY`.
    Keep it private — same rules as the Telegram token.
 
-> Billing: the bot uses Claude Sonnet by default (cheap) and only escalates hard
-> questions to Opus. A single workshop typically costs a few dollars at most, but make
-> sure your Anthropic account has credit / a payment method.
+> Billing: the bot uses Claude Sonnet by default (cheap) and only escalates a
+> question to Opus (costlier) as a last resort, when Sonnet judges it genuinely
+> can't answer well. A single workshop typically costs a few dollars at most, but
+> make sure your Anthropic account has credit / a payment method.
+>
+> To rule out Opus cost entirely, set `ESCALATION_ENABLED=false` in `.env` — Sonnet
+> then answers everything and Opus is never called.
 
 ---
 

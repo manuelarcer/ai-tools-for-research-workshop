@@ -16,7 +16,14 @@ _SUBMIT_TOOL = {
             "answer": {"type": "string", "description": "Respuesta en español para el grupo."},
             "escalate": {
                 "type": "boolean",
-                "description": "true si la pregunta excede tu confianza y conviene un modelo más potente.",
+                "description": (
+                    "Por defecto SIEMPRE false: tú puedes responder casi todas las "
+                    "preguntas del taller. Pon true SOLO como último recurso, cuando "
+                    "de verdad no puedas dar una respuesta correcta y útil por ti mismo "
+                    "(por ejemplo un problema muy especializado y ambiguo donde una "
+                    "respuesta equivocada sería perjudicial). Ante cualquier duda, "
+                    "responde tú mismo con false. Escalar es caro y lento."
+                ),
             },
         },
         "required": ["answer", "escalate"],
