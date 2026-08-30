@@ -8,17 +8,10 @@ log = logging.getLogger(__name__)
 
 # Plain-text list (one path per line, relative to repo root) of the files the
 # bot loads as grounding. Edit that file to choose documents — no code change.
+# This list is the single authority on what the bot reads: there is no
+# built-in fallback, so a missing file here means the bot refuses to start
+# rather than silently grounding on a stale or superseded corpus.
 GROUNDING_LIST_FILE = "bot/grounding_files.txt"
-
-# Used only if bot/grounding_files.txt is missing, so the bot still has context.
-_DEFAULT_FILES = [
-    "README.md",
-    "docs/workshop-plan.md",
-    "docs/workshop-ai-tools-for-research.md",
-    "exercise/beer-lambert/README.md",
-    "exercise/beer-lambert/SKILL.md.template",
-    "index.html",
-]
 
 SPANISH_INSTRUCTIONS = (
     "Eres un asistente del taller 'Inteligencia Artificial para la Investigación'. "
@@ -51,13 +44,16 @@ def extract_slide_text(html: str) -> str:
 def read_grounding_list(repo_root: Path) -> list[str]:
     """Return the grounding file paths from bot/grounding_files.txt.
 
-    Strips ``#`` comments and blank lines. Falls back to a built-in default
-    list (with a warning) if the list file is absent.
+    Strips ``#`` comments and blank lines. Raises ``FileNotFoundError`` if the
+    list file is absent — bot/grounding_files.txt is the single authority on
+    what the bot reads, so grounding on a stale fallback would be silent
+    drift; refusing to start is the safer failure.
     """
     list_path = repo_root / GROUNDING_LIST_FILE
     if not list_path.exists():
-        log.warning("Grounding list %s not found; using built-in defaults.", GROUNDING_LIST_FILE)
-        return list(_DEFAULT_FILES)
+        raise FileNotFoundError(
+            f"Grounding list not found at expected path: {list_path}"
+        )
     files: list[str] = []
     for raw in list_path.read_text(encoding="utf-8").splitlines():
         line = raw.split("#", 1)[0].strip()

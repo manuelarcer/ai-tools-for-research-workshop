@@ -1,4 +1,5 @@
 from pathlib import Path
+import pytest
 from bot.grounding import (
     extract_slide_text, load_grounding, build_system, SPANISH_INSTRUCTIONS,
     read_grounding_list,
@@ -21,6 +22,7 @@ def test_extract_slide_text_strips_tags_and_scripts():
     assert "<" not in out
 
 def test_load_grounding_concatenates_existing_and_skips_missing(tmp_path):
+    _write_list(tmp_path, "README.md\ndocs/workshop-plan.md\nexercise/beer-lambert/README.md\n")
     (tmp_path / "README.md").write_text("readme body", encoding="utf-8")
     (tmp_path / "docs").mkdir()
     (tmp_path / "docs" / "workshop-plan.md").write_text("plan body", encoding="utf-8")
@@ -39,6 +41,7 @@ def test_build_system_marks_grounding_cacheable():
 
 def test_load_grounding_warns_on_missing_file(tmp_path, caplog):
     import logging
+    _write_list(tmp_path, "README.md\ndocs/workshop-plan.md\n")
     (tmp_path / "README.md").write_text("body", encoding="utf-8")
     with caplog.at_level(logging.WARNING):
         load_grounding(tmp_path)
@@ -51,10 +54,10 @@ def test_read_grounding_list_parses_comments_and_blanks(tmp_path):
     assert read_grounding_list(tmp_path) == ["README.md", "docs/x.md"]
 
 
-def test_read_grounding_list_falls_back_when_absent(tmp_path):
-    # no bot/grounding_files.txt -> non-empty built-in defaults
-    files = read_grounding_list(tmp_path)
-    assert "README.md" in files and len(files) > 1
+def test_read_grounding_list_raises_when_absent(tmp_path):
+    # no bot/grounding_files.txt -> the single authority is missing; fail loudly
+    with pytest.raises(FileNotFoundError):
+        read_grounding_list(tmp_path)
 
 
 def test_load_grounding_uses_list_file_and_ignores_unlisted(tmp_path):

@@ -11,13 +11,15 @@ description: >
 
 > **How to use this file.** This is a fill-in-the-blank scaffold, not a finished
 > skill. Work through the milestones **in order** and complete each `TODO`. Do
-> **not** skip ahead to baseline correction (M5). You are *meant* to hit a wall at
-> M4 — that surprise is the whole lesson. Copy this file into your opencode skills
-> directory (see the setup guide), drop the `.template` suffix, and refine the
-> instructions until the agent does each step reliably.
+> **not** skip ahead to baseline correction (M5): the naive pipeline built in
+> M1–M3 is known in advance to be confidently wrong, and M4 is where you build
+> the benchmark check that catches it against a known control. Copy this file
+> into your opencode skills directory (see the setup guide), drop the
+> `.template` suffix, and refine the instructions until the agent does each
+> step reliably.
 >
 > **Milestones:** M0 setup · M1 read peaks · M2 calibrate · M3 predict ·
-> M4 benchmark (⚠ expect a shock) · M5 diagnose + correct + self-verify ·
+> M4 benchmark against a known control · M5 diagnose + correct + self-verify ·
 > M6 hardening (fast track).
 
 ## What this skill does
@@ -66,7 +68,7 @@ unknown's **true** concentration.
 - TODO: **react.** Your R² was near 1.0 — so why is the answer off? Write down your
   hypothesis before continuing. _(A perfect fit is not a correct answer.)_
 
-### M5 — Diagnose, correct, and self-verify  *(only after M4 surprised you)*
+### M5 — Diagnose, correct, and self-verify  *(after M4 confirms the naive pipeline is wrong)*
 The culprit: the raw maximum includes the **baseline** under the peak, and the
 unknown's baseline differs from the calibration set's.
 

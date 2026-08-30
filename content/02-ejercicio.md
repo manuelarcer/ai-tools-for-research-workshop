@@ -24,8 +24,9 @@ Este es el ejercicio central del taller. Vas a escribir (autor, no solo usuario)
 
 - Colorante: azul de metileno (methylene blue), con pico de absorción λmax ≈ 664 nm y coeficiente de extinción ε ≈ 95,000 M⁻¹cm⁻¹, paso óptico (path length) de 1 cm.
 - Seis estándares de calibración a concentraciones conocidas: 2, 4, 6, 8, 10 y 12 µM.
-- Un espectro "incógnita" (unknown) cuya concentración real no se te revela hasta el milestone M4.
+- Un espectro "incógnita" (unknown) cuya concentración real no se te revela hasta el milestone (hito) M4.
 - Archivos: `calibration_*.csv`, `calibration_index.csv`, `unknown.csv`, con columnas `wavelength_nm,absorbance`.
+- Los archivos del taller están en `[enlace a los materiales]`.
 - Cada espectro cubre de 400 a 800 nm.
 
 > Nota: la línea base (baseline, el nivel de fondo bajo el pico) de la incógnita es distinta a la de los espectros de calibración — como pasaría un día distinto, con una cubeta distinta. Esa diferencia, aparentemente inocente, es la causa de todo lo que viene.

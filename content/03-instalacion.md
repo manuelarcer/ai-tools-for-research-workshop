@@ -9,7 +9,7 @@ last_reviewed: 2026-08-30
 
 **Necesitas tres cosas antes de que empiece el taller.**
 
-- Una laptop con permiso para instalar software (si es de tu empresa o universidad, confirma con IT antes del día del taller).
+- Una laptop con permiso para instalar software (si es de tu empresa o universidad, confirma con TI antes del día del taller).
 - Python 3.11 o más reciente.
 - Una conexión a internet.
 
@@ -18,6 +18,8 @@ Este documento cubre la instalación de opencode en macOS y en Windows, la confi
 ## Instalar opencode en macOS
 
 **Un solo comando instala opencode en macOS.**
+
+Estos comandos se escriben en la aplicación Terminal (Terminal.app), no en Finder ni en un navegador.
 
 ```bash
 brew install anomalyco/tap/opencode
@@ -53,13 +55,21 @@ npm install -g opencode-ai
 
 > Nota: estos dos comandos son los únicos pasos de Windows verificados contra la documentación oficial. El resto del proceso en Windows — rutas, variables de entorno, cualquier paso adicional — no ha sido probado por el presentador, que no tiene una máquina Windows a mano. Si algo en tu instalación no coincide con lo descrito aquí, la página oficial es la autoridad: `https://opencode.ai/docs/`.
 
+## La aplicación de escritorio
+
+**opencode también existe como aplicación de escritorio (desktop app) multiplataforma, además de la línea de comandos (CLI).**
+
+Si prefieres no usar la terminal, esa es la alternativa. Este documento no cubre su instalación paso a paso.
+
+> Nota: la aplicación de escritorio no ha sido probada por el presentador — no hay una verificación paso a paso en este documento. La página oficial es la autoridad: `https://opencode.ai/docs/`.
+
 ## Configurar el modelo
 
 **opencode no trae un modelo propio (bring-your-own-model); en este taller usamos el nivel gratuito de OpenCode Zen.**
 
 El presentador eligió OpenCode Zen (nivel gratuito) el 2026-08-30 porque no requiere descargar ningún modelo local y funciona en una laptop modesta. Este taller usa solo esa vía — no vamos a cubrir otros proveedores ni modelos locales hoy.
 
-Dentro de opencode, conecta el proveedor y elige el modelo con:
+Dentro de opencode, conecta el proveedor con:
 
 ```
 /connect
@@ -83,7 +93,7 @@ La configuración resultante queda en el mismo archivo mencionado antes:
 
 **Un skill es una carpeta con un archivo `SKILL.md`; instalarlo es copiar esa carpeta a donde opencode los busca.**
 
-Para el ejercicio del día 2 vamos a usar un skill ya preparado como punto de partida:
+Para el ejercicio del día 2 vamos a usar un skill ya preparado como punto de partida. Los archivos del taller están en `[enlace a los materiales]`; ese skill se llama:
 
 ```
 exercise/beer-lambert/SKILL.md.template
@@ -108,7 +118,7 @@ Dentro de opencode, corre:
 **Tres fallas explican la mayoría de los problemas de instalación.**
 
 - **El comando `opencode` no se reconoce después de instalar.** Es casi siempre una entrada faltante en el PATH (la lista de carpetas donde tu terminal busca comandos ejecutables) — el instalador colocó el binario en una carpeta que tu terminal todavía no conoce. Cierra y vuelve a abrir la terminal primero; si el problema persiste, es un problema de PATH que resuelve la documentación oficial según tu instalador.
-- **Un proxy corporativo bloquea el endpoint del modelo.** Si `/connect` o `/models` fallan con un error de red y estás en una red de empresa o universidad, es probable que un proxy o firewall corporativo esté bloqueando la conexión saliente hacia el proveedor del modelo. Habla con tu equipo de IT antes del taller si sospechas que este es tu caso.
+- **Un proxy corporativo bloquea el endpoint del modelo.** Si `/connect` o `/models` fallan con un error de red y estás en una red de empresa o universidad, es probable que un proxy o firewall corporativo esté bloqueando la conexión saliente hacia el proveedor del modelo. Habla con tu equipo de TI antes del taller si sospechas que este es tu caso.
 - **Tu versión de Python es menor a 3.11.** Confirma tu versión con `python3 --version` antes del taller y actualiza si hace falta — varias partes del ejercicio del día 2 asumen 3.11 o más reciente.
 
 > Nota: `python3 --version` es un comando estándar de Python, no de opencode — no está en la tabla de comandos verificados de este documento. Si tu sistema usa otro alias (`python --version`, por ejemplo), ese es el que debes correr.
