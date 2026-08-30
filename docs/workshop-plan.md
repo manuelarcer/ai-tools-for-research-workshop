@@ -3,11 +3,11 @@ title: "Workshop Plan — AI Tools for Research"
 type: plan
 status: active
 supersedes: docs/workshop-ai-tools-for-research.md
-target: "July 2026 (exact date TBC with Raul Ocampo)"
+target: "September 2026 (exact day TBC with Raul Ocampo)"
 harness: opencode
 delivery: remote / online
 format: "3 days × 2 hours — self-paced hands-on"
-last_reviewed: 2026-07-01
+last_reviewed: 2026-08-30
 ---
 
 # Workshop Plan — AI Tools for Research
