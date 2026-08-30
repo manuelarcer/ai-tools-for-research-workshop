@@ -314,17 +314,32 @@ last_reviewed: 2026-08-30
 
 `deck: false` because this is handout material, not slides.
 
+**Platform policy, decided with the presenter.** He will test and verify the macOS path himself, so write macOS as precise, followable steps. He has **no Windows machine**, so the Windows section describes the *shape* of the process and defers to opencode's own install page as the authority. **Do not invent Windows commands.** Only two Windows commands are sourced and may be written as such: `choco install opencode` and `npm install -g opencode-ai`. Anything beyond those is a link, not an instruction — an attendee following a fabricated command loses fifteen minutes and stops trusting the guide.
+
+Facts sourced from `https://opencode.ai/docs/` and `https://opencode.ai/docs/providers/` on 2026-08-30. Use these verbatim; do not paraphrase a command into a different one:
+
+| Fact | Value |
+|---|---|
+| macOS install | `brew install anomalyco/tap/opencode` |
+| Windows install | `choco install opencode` |
+| Cross-platform install (needs Node) | `npm install -g opencode-ai` |
+| Config file | `~/.config/opencode/opencode.json` |
+| Connect a provider | `/connect` inside opencode, then paste the key |
+| Choose a model | `/models` |
+| Create project instructions | `/init`, which writes `AGENTS.md` in the project root |
+| Docs home / providers | `https://opencode.ai/docs/` · `https://opencode.ai/docs/providers/` |
+
 Sections, each with a bold claim:
 
-1. `## Antes de empezar` — claim: you need three things before the workshop starts. Bullets: a laptop with admin rights, Python 3.11 or newer, and an internet connection.
-2. `## Instalar opencode en macOS` — claim: the CLI and the desktop app are one install each. Include the exact commands and where the config file lands.
-3. `## Instalar opencode en Windows` — claim: same two pieces, different commands. Include the PowerShell equivalents and the config path.
-4. `## Configurar el modelo gratuito` — claim: opencode is bring-your-own-model, and the free path is the default for this workshop. Show where the model is selected.
-5. `## Instalar una skill` — claim: a skill is a folder with a `SKILL.md`; installing one is copying it into the right directory. Point at `exercise/beer-lambert/SKILL.md.template`.
-6. `## Comprobar que funciona` — claim: one command tells you the install is good. Give the exact command and the exact expected output.
-7. `## Problemas comunes` — claim: three failures account for most setup trouble. Cover a missing PATH entry, a blocked corporate proxy, and a Python version below 3.11.
+1. `## Antes de empezar` — claim: you need three things before the workshop starts. Bullets: a laptop with permission to install software, Python 3.11 or newer, and an internet connection.
+2. `## Instalar opencode en macOS` — claim: one command installs it. Give the Homebrew command, the `npm` alternative, and the config file location.
+3. `## Instalar opencode en Windows` — claim: the same tool, installed through Chocolatey or npm. Give only the two sourced commands, then link to `https://opencode.ai/docs/` as the authority. Include a `> Nota:` saying plainly that these steps have **not** been verified on Windows and that the official page is definitive if they differ.
+4. `## Configurar el modelo` — claim: opencode is bring-your-own-model, and the workshop uses the **OpenCode Zen free tier**, chosen by the presenter on 2026-08-30 because it needs no local model download and works on a weak laptop. Show `/connect` and `/models`, and name the config file.
+5. `## Instalar una skill` — claim: a skill is a folder with a `SKILL.md`; installing one is copying it where opencode looks. Point at `exercise/beer-lambert/SKILL.md.template`.
+6. `## Comprobar que funciona` — claim: one check tells you the install is good. Give the command and the expected output; if the exact output cannot be sourced, describe what a healthy result looks like rather than inventing a string.
+7. `## Problemas comunes` — claim: three failures account for most setup trouble. Cover a missing PATH entry after install, a corporate proxy blocking the model endpoint, and a Python version below 3.11.
 
-Every command in this file must carry a `> Nota:` stating that it is **unverified until tested on both platforms**. Do not present untested commands as confirmed. If a command cannot be sourced from opencode's own documentation, write what is known and mark the gap explicitly rather than inventing a plausible flag.
+Every command that was not sourced from the table above must carry a `> Nota:` marking it unverified. Writing a plausible-looking flag that does not exist is a plan failure, not a shortcut.
 
 - [ ] **Step 2: Add it to the bot's grounding list**
 
