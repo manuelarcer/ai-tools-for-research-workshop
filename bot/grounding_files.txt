@@ -15,6 +15,7 @@ exercise/beer-lambert/README.md
 exercise/beer-lambert/SKILL.md.template
 content/01-conceptos.md
 content/02-ejercicio.md
+content/03-instalacion.md
 
 # Deliberately NOT grounded (they contradict the direction locked in
 # docs/workshop-plan.md — a hands-on opencode build, not a tour of tools):
