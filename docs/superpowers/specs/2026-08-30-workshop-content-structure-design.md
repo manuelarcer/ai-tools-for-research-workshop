@@ -81,7 +81,7 @@ Note: the `claude-design` MCP server failed to connect on 2026-08-30 (`FIRST_PAR
 
 `bot/grounding_files.txt` lists the `content/` files as they land. Two documents were removed from that list on 2026-08-30 because they contradict the locked direction: `docs/workshop-ai-tools-for-research.md` (the seed note the plan supersedes) and `index.html` (the old "tour of my stack" hub deck). The list now keeps `README.md`, `docs/workshop-plan.md`, `exercise/beer-lambert/README.md`, and `exercise/beer-lambert/SKILL.md.template`.
 
-That removal alone took grounding from 14,405 to 10,414 input tokens per question. The three new content files will push it back up; the figure is worth re-measuring once they exist, because it sets the per-question cost of the live workshop.
+That removal alone took grounding from 14,405 to 10,414 input tokens per question. The three new content files raised it to 19,311 input tokens per question as of 2026-08-30, setting the per-question cost of the live workshop.
 
 ## Verification
 
