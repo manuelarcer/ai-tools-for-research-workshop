@@ -11,7 +11,11 @@
 
 README.md
 docs/workshop-plan.md
-docs/workshop-ai-tools-for-research.md
 exercise/beer-lambert/README.md
 exercise/beer-lambert/SKILL.md.template
-index.html
+
+# Deliberately NOT grounded (they contradict the direction locked in
+# docs/workshop-plan.md — a hands-on opencode build, not a tour of tools):
+#   docs/workshop-ai-tools-for-research.md  — seed note, superseded by the plan
+#   index.html                              — old "tour of my stack" hub deck
+# Attendee-facing content from content/ is added here as those files land.
