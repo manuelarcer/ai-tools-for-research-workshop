@@ -472,8 +472,9 @@ Expected: PASS.
 ```bash
 git add docs/superpowers/specs/2026-08-30-workshop-content-structure-design.md
 git commit -m "docs: record measured grounding cost after the content tree landed"
-git push origin main
 ```
+
+Do **not** push. This work is on the `content-structure` branch and the decision to push or merge belongs to Juan, not to this plan.
 
 ---
 
