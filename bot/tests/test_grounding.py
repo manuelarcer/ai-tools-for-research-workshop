@@ -72,3 +72,11 @@ def test_load_grounding_strips_html_from_list(tmp_path):
     text = load_grounding(tmp_path)
     assert "Titulo" in text and "cuerpo" in text
     assert "<" not in text                     # tags stripped
+
+
+def test_grounding_files_list_paths_all_exist():
+    """A typo here degrades the bot silently — load_grounding only warns."""
+    repo_root = Path(__file__).resolve().parents[2]
+    missing = [rel for rel in read_grounding_list(repo_root)
+               if not (repo_root / rel).exists()]
+    assert missing == [], f"grounding_files.txt lists missing paths: {missing}"
