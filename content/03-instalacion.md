@@ -89,7 +89,7 @@ Para el ejercicio del día 2 vamos a usar un skill ya preparado como punto de pa
 exercise/beer-lambert/SKILL.md.template
 ```
 
-Ese archivo es una plantilla (scaffold) para completar durante el ejercicio, no un skill terminado. Cuando llegue el momento, lo vas a copiar a la carpeta de skills de opencode, quitarle el sufijo `.template` y completar los `TODO` que contiene — el propio archivo `README.md` de esa carpeta explica el resto de los pasos.
+Ese archivo es una plantilla (scaffold) para completar durante el ejercicio, no un skill terminado. Cuando llegue el momento, lo vas a copiar a la carpeta de skills de opencode, quitarle el sufijo `.template` y completar los `TODO` que contiene. La guía del ejercicio en sí — los pasos, uno por uno — está en `content/02-ejercicio.md`.
 
 ## Comprobar que funciona
 
