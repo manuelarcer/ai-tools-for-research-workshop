@@ -145,7 +145,7 @@ straight line, and the ground truth is *definitional*.
 ### 7.1 The synthetic data (generated → ground truth is exact)
 
 Built on real physics so it is honest — e.g. **methylene blue, λmax ≈ 664 nm, ε ≈ 95,000
-M⁻¹cm⁻¹, path length 1 cm.** Generate absorbance-vs-wavelength CSVs (400–700 nm):
+M⁻¹cm⁻¹, path length 1 cm.** Generate absorbance-vs-wavelength CSVs (400–800 nm):
 
 - **Calibration series:** 6 spectra at known concentrations (e.g. 2, 4, 6, 8, 10, 12 µM). Each is
   a Gaussian peak at 664 nm with height `A = ε·l·c`, **plus** (a) small Gaussian noise and (b) **a
@@ -164,7 +164,7 @@ because methylene blue's ε is real. This dissolves the real-vs-synthetic tensio
 The obvious first-pass code for "find the peak absorbance" is `A_peak = spectrum.max()` — **the
 single most common real Beer-Lambert mistake: reading the peak without baseline-correcting
 first.** It is not contrived; it is *the* mistake. Because the unknown's baseline differs from the
-calibration's, the predicted concentration comes out ~20% off (9.0 → ~10.9 µM).
+calibration's, the predicted concentration comes out ~20% off (9.0 → ~10.78 µM).
 
 **The gold:** R² is still **0.999**. The calibration line is gorgeous; every instinct says
 "done." This teaches the deepest lesson these tools can offer a scientist — **a perfect fit is not

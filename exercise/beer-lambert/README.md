@@ -35,7 +35,9 @@ answer. Only the benchmark against the known value exposes it.
 
 ## Handout hygiene
 
-- `data/ground_truth.txt` holds the answer — **do not distribute before milestone M4.**
+- `data/ground_truth.txt` holds the answer — **do not distribute before milestone M4**,
+  not to preserve a surprise (the M4 result is declared up front in the exercise guide)
+  but so attendees compute and compare their own prediction before seeing the true value.
   It's git-ignored; when you package the handout, ship `data/` *without* it.
 - The unknown's concentration appears nowhere in the handed-out files.
 

@@ -1,5 +1,10 @@
 # Handoff — Slide Deck Generation
 
+> **Superseded (2026-08-30).** This brief describes the generic tool-survey deck.
+> The workshop is the hands-on opencode build in `docs/workshop-plan.md`; the current
+> deck brief is `slides/design-brief.md` and its content source is `content/`.
+> Kept for its design tokens and its evaluation checklist.
+
 **Project:** "Inteligencia Artificial para la Investigación" — workshop for students and research staff at a university in Mexico.
 **Deliverable being handed off:** the slide deck (the main deliverable of the project).
 **Purpose of this document:** a self-contained brief for a design-focused agent to generate the deck from scratch, so its output can be evaluated against the existing reference deck `taller-ia-alt3-terminal.html`. Do not just copy the reference — regenerate, then we compare.

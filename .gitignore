@@ -6,3 +6,6 @@ __pycache__/
 .pytest_cache/
 
 .venv/
+
+# Subagent-driven-development scratch (ledger, briefs, review packages)
+.superpowers/

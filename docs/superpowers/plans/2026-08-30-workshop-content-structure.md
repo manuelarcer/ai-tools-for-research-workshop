@@ -250,7 +250,7 @@ last_reviewed: 2026-08-30
 Sections, each with a bold claim, in this order:
 
 1. `## El objetivo, dicho de frente` — claim: you are going to build a pipeline that gives a confident answer that is about 20% wrong, and then build the check that catches it. State plainly that R² will be 0.9998 and the answer will still be wrong, and that this is the point. Nothing is hidden in this guide.
-2. `## Los datos` — claim: the data is synthetic, so the true answer is exact arithmetic. Bullets: methylene blue, λmax ≈ 664 nm, ε ≈ 95,000 M⁻¹cm⁻¹, path length 1 cm; six calibration spectra at known concentrations; one unknown; `calibration_*.csv`, `calibration_index.csv`, `unknown.csv`, columns `wavelength_nm,absorbance`. Say that the unknown's baseline differs from the calibration set, as it would on a different day with a different cuvette.
+2. `## Los datos` — claim: the data is synthetic, so the true answer is exact arithmetic. Bullets: methylene blue, λmax ≈ 664 nm, ε ≈ 95,000 M⁻¹cm⁻¹, path length 1 cm; six calibration spectra at known concentrations; one unknown; `calibration_*.csv`, `calibration_index.csv`, `unknown.csv`, columns `wavelength_nm,absorbance`. Spectra span **400-800 nm** (this is what `generate_data.py:28` produces; `docs/workshop-plan.md` §7.1 says 400-700 nm and is stale — the code wins). Say that the unknown's baseline differs from the calibration set, as it would on a different day with a different cuvette.
 3. `## M0 — Carga y grafica un espectro` — claim: if you can plot one spectrum, you are in. Everyone reaches this milestone.
 4. `## M1 — Lee un pico por concentración` — claim: read the peak absorbance from every calibration spectrum and pair it with its known concentration.
 5. `## M2 — Ajusta la recta de calibración` — claim: slope, intercept, R² = 0.9998. Warn in the note that this number is about to mislead them.
@@ -270,10 +270,12 @@ Append to `bot/grounding_files.txt`, above the trailing comment block:
 content/02-ejercicio.md
 ```
 
-- [ ] **Step 3: Verify the numbers against the generator**
+- [ ] **Step 3: Verify the numbers against the committed benchmark table**
 
-Run: `.venv/bin/python exercise/beer-lambert/generate_data.py`
-Expected: the printed instructor benchmark table matches the numbers written into the guide. If it does not, the generator wins — correct the guide, not the generator.
+Run: `sed -n '/Expected result/,/^$/p' exercise/beer-lambert/README.md`
+Expected: every number in the guide matches that table — naive 10.78 µM (+19.8 %), corrected 9.03 µM (+0.3 %), truth 9.00 µM, R² 0.9998, seed 42. That table is the committed authority.
+
+Do **not** run `generate_data.py` to check: it imports numpy, which is not installed in `.venv`, and running it writes `data/ground_truth.txt` locally for no benefit here.
 
 - [ ] **Step 4: Run the suite**
 
@@ -470,8 +472,9 @@ Expected: PASS.
 ```bash
 git add docs/superpowers/specs/2026-08-30-workshop-content-structure-design.md
 git commit -m "docs: record measured grounding cost after the content tree landed"
-git push origin main
 ```
+
+Do **not** push. This work is on the `content-structure` branch and the decision to push or merge belongs to Juan, not to this plan.
 
 ---
 
