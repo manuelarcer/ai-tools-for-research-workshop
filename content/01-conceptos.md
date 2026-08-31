@@ -57,7 +57,9 @@ Hoy solo lo verás correr: un skill ya escrito, invocado por el agente en el mom
 - La historia de costo: no todo el trabajo necesita el modelo más caro — explorar, buscar o resumir puede correr en un modelo gratuito o barato, y reservar el modelo fuerte para la parte que realmente lo exige.
 - Este es el patrón insignia (signature pattern) del taller: modelo fuerte planea, modelo económico ejecuta, y siempre se verifica el resultado.
 
-> Nota: este mismo patrón — planear con un modelo, ejecutar con otro, verificar siempre — es el que usarás en el ejercicio de Beer-Lambert del día 2.
+> Nota: este mismo patrón — planear con un modelo, ejecutar con otro, verificar siempre — lo vas a ver demostrado por el presentador durante el taller, y lo vas a aplicar tú mismo a tu propio problema el día 3.
+
+La historia de costo es simple: casi ningún problema de investigación necesita el modelo más caro de principio a fin. Puedes mandar un modelo barato a explorar código, buscar en documentación o resumir un texto largo, y reservar el modelo capaz — más lento y más caro — para la parte difícil, la que de verdad exige razonar bien. Ninguno de los dos te libra de verificar el resultado: la verificación es lo que hace que confíes en la salida, venga del modelo barato o del capaz.
 
 ## Hooks: disparadores del ciclo de vida
 
