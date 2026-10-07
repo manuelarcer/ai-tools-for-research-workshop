@@ -36,7 +36,7 @@ read every "Day 1/2/3", "hands-on", and "milestone pace" statement through this 
 | Solution notebook | **Published** with a "try the exercise first" warning | instructor-only status |
 | Literature search | **Kept, as a live demo**; needs a minimal version that runs in opencode on an open model, with a reference check | §6 (Claude Code `lit-review`) |
 | Harness | **opencode** for everything (pi considered and rejected: no permission system, terminal-only) | unchanged from §3 |
-| Telegram Q&A bot | **Dropped from the course, but preserved.** Attendees ask their own agents; `AGENTS.md` at the repo root replaces the bot's grounding. The `bot/` code, tests, specs and plans must **not be lost**: before any public-release cleanup removes them, keep them on an archive branch or tag (e.g. `archive/telegram-bot`) or in a separate repo. Never delete without that step | `bot/` |
+| Telegram Q&A bot | **Dropped from the course, but preserved.** Attendees ask their own agents; `AGENTS.md` at the repo root replaces the bot's grounding. The `bot/` code, tests, specs and plans must **not be lost**: they are preserved under the git tag `v1-3day-workshop` (pushed 2026-10-07), together with the rest of the 3-day design, so a later cleanup of `main` loses nothing | `bot/` |
 | Two-model pattern | **Open.** Was "day-1 demo, day-3 practice" (commit `764d25d`); day 3 no longer exists | §3, §7.4 |
 
 **Proposed defaults, not yet confirmed (model choice pending Juan's decision):** open model via a free hosted endpoint (e.g. OpenRouter
