@@ -16,6 +16,8 @@ last_reviewed: 2026-08-30
 
 > Nota: si en algún punto piensas "esto ya funciona, R² es casi 1" — recuerda esta sección. Ese es exactamente el momento en que hay que verificar, no confiar.
 
+> Nota: la solución completa está en `exercise/beer-lambert/solucion-referencia.ipynb`. Intenta el ejercicio antes de abrirla; si la lees primero, pierdes la lección.
+
 Este es el ejercicio central del taller. Vas a escribir (autor, no solo usuario) un skill (conjunto de instrucciones reutilizables, visto el día 1) de opencode que calibra, predice y se verifica a sí mismo contra un control conocido. El hilo del día 1 — la verificación no es opcional — se vuelve concreto aquí: vas a sentir en carne propia por qué un buen ajuste estadístico no es lo mismo que una respuesta correcta.
 
 ## Los datos

@@ -3,11 +3,11 @@ title: "Workshop Plan — AI Tools for Research"
 type: plan
 status: active
 supersedes: docs/workshop-ai-tools-for-research.md
-target: "September 2026 (exact day TBC with Raul Ocampo)"
+target: "TBC with Raul Ocampo"
 harness: opencode
 delivery: remote / online
-format: "3 days × 2 hours — self-paced hands-on"
-last_reviewed: 2026-08-30
+format: "1 session × 3 hours — demonstration course; hands-on via the public repository afterwards"
+last_reviewed: 2026-10-07
 ---
 
 # Workshop Plan — AI Tools for Research
@@ -16,6 +16,40 @@ last_reviewed: 2026-08-30
 every load-bearing assumption. Where the earlier seed note
 ([workshop-ai-tools-for-research.md](workshop-ai-tools-for-research.md)) or the HTML deck
 contradicts anything here, this document wins — see §12 for the diff.
+
+---
+
+## 0. Scope change — 2026-10-07 (overrides §1–§11 where they conflict)
+
+The format changed from **3 days × 2 hours hands-on** to **one 3-hour demonstration course**.
+Attendees watch; the hands-on part moves to this repository, which they use on their own
+afterwards. Sections §1–§11 below are kept for their reasoning but are **not yet rewritten**:
+read every "Day 1/2/3", "hands-on", and "milestone pace" statement through this section.
+
+| Decision | Now | Replaces |
+|---|---|---|
+| Title | **IA agéntica para la investigación** | none recorded |
+| Objective | Entender qué es un agente de IA, ver cómo se aplica a dos tareas reales de investigación (búsqueda de literatura y análisis de datos), y aprender a verificar sus resultados. El repositorio del curso permite repetir ambos ejemplos y adaptarlos a tus propios datos. | §1 takeaway "author a skill" |
+| Format | 1 × 3 h, **remote**, demonstrations; attendees repeat the examples from the repo | §2, §4 |
+| Day 3 (bring your own problem) | **Cut.** Replaced by a ~20 min "how to use the repo yourself" block | §4, §8 |
+| Beer-Lambert | **Kept, as a live demo** and as a self-study exercise in the repo | §7 (hands-on block) |
+| Solution notebook | **Published** with a "try the exercise first" warning | instructor-only status |
+| Literature search | **Kept, as a live demo**; needs a minimal version that runs in opencode on an open model, with a reference check | §6 (Claude Code `lit-review`) |
+| Harness | **opencode** for everything (pi considered and rejected: no permission system, terminal-only) | unchanged from §3 |
+| Telegram Q&A bot | **Dropped from the course, but preserved.** Attendees ask their own agents; `AGENTS.md` at the repo root replaces the bot's grounding. The `bot/` code, tests, specs and plans must **not be lost**: before any public-release cleanup removes them, keep them on an archive branch or tag (e.g. `archive/telegram-bot`) or in a separate repo. Never delete without that step | `bot/` |
+| Two-model pattern | **Open.** Was "day-1 demo, day-3 practice" (commit `764d25d`); day 3 no longer exists | §3, §7.4 |
+
+**Proposed defaults, not yet confirmed (model choice pending Juan's decision):** open model via a free hosted endpoint (e.g. OpenRouter
+free models) rather than local Ollama; literature search on OpenAlex, with Crossref to check that
+each DOI exists.
+
+**Draft agenda (3 h):** concepts 45 min → literature-search demo 35 min → break 10 min →
+Beer-Lambert demo 55 min → how to use the repo yourself 20 min → questions 15 min.
+
+**Consequence:** the repository now carries the hands-on part alone. The setup guide
+(`content/03-instalacion.md`, untested) and the exercise guide must work for an attendee with no
+instructor present, and the repo must be cleaned of stale and instructor-only material before
+release, because attendees' agents will read whatever is left.
 
 ---
 

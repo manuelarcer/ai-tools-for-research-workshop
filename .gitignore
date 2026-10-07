@@ -9,3 +9,6 @@ __pycache__/
 
 # Subagent-driven-development scratch (ledger, briefs, review packages)
 .superpowers/
+
+# Session logs (local only)
+.claude/logs/
